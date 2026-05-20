@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network Security Config — AbbasiTahseel
+  ────────────────────────────────────────────────────────────────────────────
+  Allow cleartext (http://) traffic so the app can talk to the legacy
+  backend that currently runs on http://192.168.x.x:3000 inside the
+  local network. System CAs are still trusted for any future https:// hosts.
+
+  When the backend migrates to https:// (production), this base-config
+  should be tightened to `cleartextTrafficPermitted="false"` and per-domain
+  exceptions added only where strictly needed.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
