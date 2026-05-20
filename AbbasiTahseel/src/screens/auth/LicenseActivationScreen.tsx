@@ -30,7 +30,7 @@ import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PrimaryButton, TextField } from '@/components/forms';
-import { useTheme } from '@/ds/theme';
+import { useTheme } from '@/design-system/theme';
 import { useLicenseStore } from '@/stores/licenseStore';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

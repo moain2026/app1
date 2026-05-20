@@ -12,6 +12,11 @@ module.exports = {
     // WatermelonDB requires legacy decorators on Model classes.
     ['@babel/plugin-proposal-decorators', { legacy: true }],
 
+    // Required for `export * as ns from './foo'` syntax used in barrel files
+    // (e.g. src/services/storage/index.ts). Metro's default preset does not
+    // include this transform in all paths, so we add it explicitly.
+    '@babel/plugin-transform-export-namespace-from',
+
     // Path aliases — must mirror tsconfig.json "paths".
     [
       'module-resolver',

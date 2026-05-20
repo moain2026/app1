@@ -23,7 +23,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
-import { useTheme } from '@/ds/theme';
+import { useTheme } from '@/design-system/theme';
 import { useAuthStore } from '@/stores/authStore';
 import { useLicenseStore } from '@/stores/licenseStore';
 

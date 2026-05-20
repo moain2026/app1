@@ -25,7 +25,7 @@ import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PinInput, PrimaryButton } from '@/components/forms';
-import { useTheme } from '@/ds/theme';
+import { useTheme } from '@/design-system/theme';
 import { setPin } from '@/services/security/pinManager';
 import { setAdminPinHash } from '@/services/storage/secureStorage';
 import { useAuthStore } from '@/stores/authStore';
