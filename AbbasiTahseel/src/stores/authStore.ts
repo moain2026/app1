@@ -27,7 +27,7 @@ import {
   LoginUserResponseSchema,
   type LoginUserResponse,
 } from '@/services/api/schemas/auth';
-import { generateDeviceId } from '@/services/security/licenseManager';
+import { getSecureId } from '@/services/security/licenseManager';
 import {
   clearAllAuthCredentials,
   getAccessToken,
@@ -37,7 +37,11 @@ import {
   setLastUsername,
   setRefreshToken,
 } from '@/services/storage/secureStorage';
-import { getBranchNumber, setLastLoginAt } from '@/services/storage/prefs';
+import {
+  getBaseUrl,
+  getBranchNumber,
+  setLastLoginAt,
+} from '@/services/storage/prefs';
 import { logger } from '@/utils/logger';
 
 const log = logger.scope('AuthStore');
@@ -65,6 +69,27 @@ export interface AuthUser {
   };
 }
 
+/**
+ * Diagnostic snapshot of the LAST failed /Login attempt. Surfaced in the UI
+ * via a "Copy details" button so the operator can share exactly what the
+ * server saw without dumping any secret in the open.
+ *
+ * Sensitive fields are masked at capture-time (see `login()` below):
+ *   - `password`  → `<N chars>`
+ *   - `secureId`  → truncated to first 8 chars + `…`
+ *   - response body strings are passed through verbatim (server only
+ *     returns generic Arabic error text, no tokens).
+ */
+export interface LoginErrorDetails {
+  url: string;
+  method: string;
+  requestBody: Record<string, string>;
+  responseStatus: number | null;
+  responseBody: string;
+  errorCode: string;
+  timestamp: string;
+}
+
 export interface AuthState {
   user: AuthUser | null;
   accessToken: string | null;
@@ -73,6 +98,9 @@ export interface AuthState {
   isLoading: boolean;
   /** i18n key OR raw string set by network/storage errors. */
   error: string | null;
+  /** Snapshot of the most recent failed login — null on success or before
+   *  any attempt. Cleared when the user navigates away or logs in. */
+  lastLoginError: LoginErrorDetails | null;
 
   // Actions
   login(username: string, password: string): Promise<boolean>;
@@ -104,6 +132,12 @@ function toAuthUser(raw: LoginUserResponse, username: string): AuthUser {
 
 // ─── Store ────────────────────────────────────────────────────────────────
 
+function maskSecureId(value: string): string {
+  if (value.length === 0) return '<empty>';
+  if (value.length <= 8) return `${value.slice(0, 4)}…`;
+  return `${value.slice(0, 8)}…`;
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   accessToken: null,
@@ -111,6 +145,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  lastLoginError: null,
 
   // ─── login ──────────────────────────────────────────────────────────
   //
@@ -123,33 +158,66 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // `appId` comes from prefs (branch number — default "1"). `secureId` is
   // the device id used by license activation (stable across reinstalls).
   async login(username, password) {
-    set({ isLoading: true, error: null });
-    try {
-      const appId = getBranchNumber();
-      const secureId = await generateDeviceId();
-      log.debug('login attempt', { username, appId, hasSecureId: secureId.length > 0 });
+    set({ isLoading: true, error: null, lastLoginError: null });
+    const appId = getBranchNumber();
+    const secureId = await getSecureId();
+    const url = `${getBaseUrl()}Login`;
 
+    // Pre-build the redacted request body so it can be reused for both the
+    // happy path log and the failure snapshot.
+    const redactedBody: Record<string, string> = {
+      username,
+      password: `<${password.length} chars>`,
+      appId,
+      secureId: maskSecureId(secureId),
+    };
+    log.debug('login attempt', redactedBody);
+
+    try {
       const raw = await api.call<unknown>('login', {
         body: { username, password, appId, secureId },
       });
       const parsed = LoginUserResponseSchema.safeParse(raw);
       if (!parsed.success) {
         log.warn('login response failed schema validation');
-        set({ isLoading: false, error: 'auth.login.invalidCredentials' });
+        set({
+          isLoading: false,
+          error: 'auth.login.invalidCredentials',
+          lastLoginError: {
+            url,
+            method: 'POST',
+            requestBody: redactedBody,
+            responseStatus: 200,
+            responseBody:
+              typeof raw === 'string' ? raw : JSON.stringify(raw, null, 2),
+            errorCode: 'SCHEMA_INVALID',
+            timestamp: new Date().toISOString(),
+          },
+        });
         return false;
       }
 
       const u = parsed.data;
       const access = u.access_token ?? '';
       // Legacy /Login does NOT return a separate refresh_token — the same
-      // access_token is used until /refresh is called explicitly. Treat the
-      // refresh_token as optional and fall back to the access_token so the
-      // session is still considered authenticated.
+      // access_token is used until /refresh is called explicitly.
       const refresh = u.refresh_token ?? access;
 
       if (access.length === 0) {
         log.warn('login response had no access_token');
-        set({ isLoading: false, error: 'auth.login.invalidCredentials' });
+        set({
+          isLoading: false,
+          error: 'auth.login.invalidCredentials',
+          lastLoginError: {
+            url,
+            method: 'POST',
+            requestBody: redactedBody,
+            responseStatus: 200,
+            responseBody: JSON.stringify(u, null, 2),
+            errorCode: 'NO_ACCESS_TOKEN',
+            timestamp: new Date().toISOString(),
+          },
+        });
         return false;
       }
 
@@ -169,18 +237,53 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true,
         isLoading: false,
         error: null,
+        lastLoginError: null,
       });
       log.info('login success', { username });
       return true;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       log.warn('login threw', { message: msg });
+
+      // Extract AppError / Axios-error fields without using `any`.
+      const errObj: Record<string, unknown> =
+        err && typeof err === 'object' ? (err as Record<string, unknown>) : {};
+      const httpStatus =
+        typeof errObj.httpStatus === 'number' ? errObj.httpStatus : null;
+      const errorCode =
+        typeof errObj.code === 'string' && errObj.code.length > 0
+          ? errObj.code
+          : err instanceof Error
+            ? err.name
+            : 'UNKNOWN';
+
+      // Try to surface the server's raw response (most useful for diagnosis).
+      const details = errObj.details;
+      const responseBody = (() => {
+        if (typeof errObj.responseBody === 'string') return errObj.responseBody;
+        if (details && typeof details === 'object') {
+          const body = (details as Record<string, unknown>).responseBody;
+          if (typeof body === 'string') return body;
+          if (body !== undefined) return JSON.stringify(body, null, 2);
+        }
+        return msg;
+      })();
+
       set({
         isLoading: false,
         error:
-          err instanceof Error && err.message.length > 0
-            ? 'auth.login.networkError'
-            : 'auth.login.invalidCredentials',
+          httpStatus !== null
+            ? 'auth.login.invalidCredentials'
+            : 'auth.login.networkError',
+        lastLoginError: {
+          url,
+          method: 'POST',
+          requestBody: redactedBody,
+          responseStatus: httpStatus,
+          responseBody,
+          errorCode,
+          timestamp: new Date().toISOString(),
+        },
       });
       return false;
     }
@@ -195,6 +298,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       refreshToken: null,
       isAuthenticated: false,
       error: null,
+      lastLoginError: null,
     });
   },
 
@@ -269,6 +373,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   clearError() {
-    set({ error: null });
+    set({ error: null, lastLoginError: null });
   },
 }));
