@@ -1,0 +1,11 @@
+/**
+ * Stores — Barrel Export
+ *
+ * All Zustand stores are re-exported here so call sites can use:
+ *   import { useAuthStore, useLicenseStore } from '@/stores';
+ *
+ * Keep this list lean. Each store should own a single concern.
+ */
+
+export { useAuthStore, type AuthState, type AuthUser } from './authStore';
+export { useLicenseStore, type LicenseState } from './licenseStore';

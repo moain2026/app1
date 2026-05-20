@@ -1,14 +1,26 @@
 /**
  * Root component — العباسي تحصيل
  *
- * Minimal bootable shell. Mounts ThemeProvider and renders a placeholder
- * screen. Real navigation + screens land in Phase 5+.
+ * Wave 2: full provider stack wiring.
+ *   GestureHandlerRootView   (gesture system root, MUST be outermost)
+ *     └─ SafeAreaProvider     (safe-area insets for notched devices)
+ *         └─ ThemeProvider    (design-system colors + dark theme)
+ *             └─ RootNavigator (decides Auth/Main stack, owns its own
+ *                               NavigationContainer per variant)
+ *
+ * i18n is initialised once before the tree mounts; we keep the Splash
+ * gating in RootNavigator so the user always sees the brand splash even
+ * when i18n bootstrap is instantaneous (cached language).
  */
 
-import React, { useEffect } from 'react';
-import { I18nManager, StatusBar, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { I18nManager, StatusBar } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { ThemeProvider, useTheme } from './src/design-system/theme';
+import { ThemeProvider } from './src/design-system/theme';
+import { initI18n } from './src/i18n';
+import { RootNavigator } from './src/navigation/RootNavigator';
 
 // Force RTL globally before anything renders.
 if (!I18nManager.isRTL) {
@@ -16,48 +28,39 @@ if (!I18nManager.isRTL) {
   I18nManager.forceRTL(true);
 }
 
-function Placeholder(): React.JSX.Element {
-  const { colors } = useTheme();
-  return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar barStyle="light-content" />
-      <Text style={[styles.title, { color: colors.textPrimary }]}>
-        العباسي تحصيل
-      </Text>
-      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        Al-Abbasi Tahsil
-      </Text>
-    </View>
-  );
-}
+function App(): React.JSX.Element | null {
+  const [i18nReady, setI18nReady] = useState<boolean>(false);
 
-function App(): React.JSX.Element {
   useEffect(() => {
-    // initSyncEngine() will be wired here in Phase 5 once auth is in place.
+    let cancelled = false;
+    initI18n()
+      .catch(() => {
+        // i18n bootstrap is best-effort; fall back to bundled defaults.
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setI18nReady(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+  if (!i18nReady) {
+    return null;
+  }
+
   return (
-    <ThemeProvider>
-      <Placeholder />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <StatusBar barStyle="light-content" />
+          <RootNavigator />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  subtitle: {
-    fontSize: 16,
-    marginTop: 8,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-});
 
 export default App;
