@@ -27,6 +27,12 @@ import {
   LoginUserResponseSchema,
   type LoginUserResponse,
 } from '@/services/api/schemas/auth';
+import {
+  createDevBypassUser,
+  DEV_BYPASS_ACCESS_TOKEN,
+  DEV_BYPASS_REFRESH_TOKEN,
+  isDevBypassCredentials,
+} from '@/services/auth/devBypass';
 import { getSecureId } from '@/services/security/licenseManager';
 import {
   clearAllAuthCredentials,
@@ -101,6 +107,15 @@ export interface AuthState {
   /** Snapshot of the most recent failed login — null on success or before
    *  any attempt. Cleared when the user navigates away or logs in. */
   lastLoginError: LoginErrorDetails | null;
+  /**
+   * True when the current session was minted by the local "Dev Bypass"
+   * path (see `services/auth/devBypass.ts`). Surfaced in the UI as a
+   * persistent yellow banner so the operator never confuses mock data
+   * with production data. Persisted across reloads only as a runtime
+   * flag — the `isDevBypassAccessToken` token sentinel is the source of
+   * truth on cold start (see `loadFromStorage`).
+   */
+  isDevBypass: boolean;
 
   // Actions
   login(username: string, password: string): Promise<boolean>;
@@ -146,6 +161,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: false,
   error: null,
   lastLoginError: null,
+  isDevBypass: false,
 
   // ─── login ──────────────────────────────────────────────────────────
   //
@@ -159,6 +175,42 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // the device id used by license activation (stable across reinstalls).
   async login(username, password) {
     set({ isLoading: true, error: null, lastLoginError: null });
+
+    // ─── Dev Bypass shortcut ──────────────────────────────────────────
+    // Matches the LOCAL "dev / 0000" credentials. Skips the network call
+    // entirely, writes sentinel tokens to secureStorage, and flips the
+    // session into bypass mode. See services/auth/devBypass.ts for the
+    // security posture and rationale.
+    if (isDevBypassCredentials(username, password)) {
+      log.info('login: dev bypass activated');
+      const bypassUser = createDevBypassUser();
+      try {
+        await Promise.all([
+          setAccessToken(DEV_BYPASS_ACCESS_TOKEN),
+          setRefreshToken(DEV_BYPASS_REFRESH_TOKEN),
+          setLastUsername(bypassUser.username),
+        ]);
+        setLastLoginAt(new Date());
+      } catch (err) {
+        // Token-write failures are non-fatal in bypass mode — the in-memory
+        // session is still valid and the operator can still drive the UI.
+        log.warn('dev bypass: token persistence failed (continuing)', {
+          message: err instanceof Error ? err.message : String(err),
+        });
+      }
+      set({
+        user: bypassUser,
+        accessToken: DEV_BYPASS_ACCESS_TOKEN,
+        refreshToken: DEV_BYPASS_REFRESH_TOKEN,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        lastLoginError: null,
+        isDevBypass: true,
+      });
+      return true;
+    }
+
     const appId = getBranchNumber();
     const secureId = await getSecureId();
     const url = `${getBaseUrl()}Login`;
@@ -238,6 +290,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
         error: null,
         lastLoginError: null,
+        isDevBypass: false,
       });
       log.info('login success', { username });
       return true;
@@ -299,6 +352,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isAuthenticated: false,
       error: null,
       lastLoginError: null,
+      isDevBypass: false,
     });
   },
 
@@ -345,7 +399,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     if (!access || !refresh) {
       // No persisted session — leave defaults in place.
-      set({ isAuthenticated: false });
+      set({ isAuthenticated: false, isDevBypass: false });
+      return;
+    }
+
+    // ─── Dev Bypass cold-restart ──────────────────────────────────────
+    // If the persisted tokens are the bypass sentinels, restore the same
+    // fully-permissioned `AuthUser` shape that the bypass branch in
+    // `login()` minted. We do NOT contact the network here.
+    if (access === DEV_BYPASS_ACCESS_TOKEN) {
+      const bypassUser = createDevBypassUser();
+      set({
+        user: bypassUser,
+        accessToken: access,
+        refreshToken: refresh,
+        isAuthenticated: true,
+        isDevBypass: true,
+      });
       return;
     }
 
@@ -369,6 +439,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       accessToken: access,
       refreshToken: refresh,
       isAuthenticated: true,
+      isDevBypass: false,
     });
   },
 

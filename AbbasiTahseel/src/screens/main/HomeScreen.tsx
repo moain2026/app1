@@ -105,6 +105,7 @@ export function HomeScreen(): React.JSX.Element {
   const navigation = useNavigation<NavLike>();
 
   const user = useAuthStore((s) => s.user);
+  const isDevBypass = useAuthStore((s) => s.isDevBypass);
   const pendingCount = useSyncStore((s) => s.pendingCount);
   const lastSyncAt = useSyncStore((s) => s.lastSyncAt);
   const isSyncing = useSyncStore((s) => s.isSyncing);
@@ -162,6 +163,22 @@ export function HomeScreen(): React.JSX.Element {
       edges={['top']}
     >
       <AppHeader title={t('navigation.tabs.home')} showMenu />
+
+      {/* Dev mode banner — sticky-ish indicator that the entire dataset
+          on this device is mock. Tap-targets the menu drawer's "تسجيل
+          الخروج" implicitly (operator just logs out to leave dev mode). */}
+      {isDevBypass ? (
+        <View
+          style={[
+            styles.devBanner,
+            { backgroundColor: colors.warning, borderColor: colors.warningSoft },
+          ]}
+        >
+          <Text style={[styles.devBannerText, { color: colors.textOnBrand }]}>
+            {t('common.devModeBanner')}
+          </Text>
+        </View>
+      ) : null}
 
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -274,6 +291,16 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     marginTop: 8,
     padding: 16,
+  },
+  devBanner: {
+    borderBottomWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  devBannerText: {
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   activityEmpty: {
     fontSize: 13,

@@ -14,7 +14,8 @@
  */
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
@@ -35,6 +36,10 @@ import { z } from 'zod';
 import { PasswordField, PrimaryButton, TextField } from '@/components/forms';
 import { useTheme } from '@/design-system/theme';
 import { http } from '@/services/api/httpClient';
+import {
+  DEV_BYPASS_PASSWORD,
+  DEV_BYPASS_USERNAME,
+} from '@/services/auth/devBypass';
 import { getSecureId } from '@/services/security/licenseManager';
 import { getBaseUrl } from '@/services/storage/prefs';
 import { getAdminPinHash } from '@/services/storage/secureStorage';
@@ -72,6 +77,7 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(LoginFormSchema),
@@ -84,20 +90,27 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
     clearError();
   }, [clearError]);
 
-  // Resolve the secureId once (override or auto) so we can preview it.
-  useEffect(() => {
-    let cancelled = false;
-    void getSecureId()
-      .then((v) => {
-        if (!cancelled) setSecureIdPreview(v);
-      })
-      .catch(() => {
-        if (!cancelled) setSecureIdPreview('—');
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // ─── secureId preview ────────────────────────────────────────────────
+  // Re-resolves on EVERY focus, not just initial mount. This matters because
+  // the operator typically opens ServerSettings, edits the override, hits
+  // Save, then returns here — without the focus dependency the preview line
+  // would still show the auto-computed value and be misleading.
+  // See: docs/LEGACY_AUTH_ANALYSIS.md "Bug discovered from Wave 3 screenshots".
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      void getSecureId()
+        .then((v) => {
+          if (!cancelled) setSecureIdPreview(v);
+        })
+        .catch(() => {
+          if (!cancelled) setSecureIdPreview('—');
+        });
+      return () => {
+        cancelled = true;
+      };
+    }, []),
+  );
 
   // Build the human-readable error details block shown in the modal.
   const errorDetailsText = lastLoginError
@@ -134,6 +147,20 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
     // Otherwise: the store has already set isAuthenticated → RootNavigator
     // will switch to Main automatically on the next render.
   });
+
+  /**
+   * Dev Mode one-tap login. Pre-fills the form with the bypass credentials
+   * (which are documented in the helper text right above the button so the
+   * operator can also type them by hand) and triggers a submit. The bypass
+   * branch inside `useAuthStore.login` then short-circuits before any
+   * network call — see services/auth/devBypass.ts.
+   */
+  function quickDevLogin(): void {
+    setValue('username', DEV_BYPASS_USERNAME, { shouldValidate: false });
+    setValue('password', DEV_BYPASS_PASSWORD, { shouldValidate: false });
+    Keyboard.dismiss();
+    void onSubmit();
+  }
 
   const banner =
     error !== null && error.length > 0 ? t(error) : undefined;
@@ -318,6 +345,54 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
             </Pressable>
           ) : null}
         </View>
+
+        {/* ─── Dev Mode card ──────────────────────────────────────────────
+            Visually distinct (warning-colored border) so it cannot be
+            mistaken for the real login. Shows the bypass credentials in
+            plain sight; the one-tap button prefills+submits in one step. */}
+        <View
+          style={[
+            styles.devCard,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.warning,
+            },
+          ]}
+        >
+          <Text style={[styles.devTitle, { color: colors.warning }]}>
+            {t('auth.login.devMode.title')}
+          </Text>
+          <Text style={[styles.devBody, { color: colors.textSecondary }]}>
+            {t('auth.login.devMode.description')}
+          </Text>
+          <Text
+            style={[styles.devCreds, { color: colors.textTertiary }]}
+            selectable
+          >
+            {t('auth.login.devMode.credentials')}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={quickDevLogin}
+            disabled={isLoading}
+            style={({ pressed }) => [
+              styles.devButton,
+              {
+                backgroundColor: pressed
+                  ? colors.surfaceElevated
+                  : colors.surface,
+                borderColor: colors.warning,
+                opacity: isLoading ? 0.5 : 1,
+              },
+            ]}
+          >
+            <Text
+              style={[styles.devButtonText, { color: colors.textPrimary }]}
+            >
+              {t('auth.login.devMode.quickLogin')}
+            </Text>
+          </Pressable>
+        </View>
       </ScrollView>
 
       <Modal
@@ -431,6 +506,42 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 8,
     textAlign: 'center',
+  },
+  devCard: {
+    borderRadius: 12,
+    borderStyle: 'dashed',
+    borderWidth: 1.5,
+    marginTop: 16,
+    padding: 14,
+  },
+  devTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 6,
+    textAlign: 'right',
+  },
+  devBody: {
+    fontSize: 12,
+    marginBottom: 6,
+    textAlign: 'right',
+  },
+  devCreds: {
+    fontFamily: 'monospace',
+    fontSize: 11,
+    lineHeight: 16,
+    marginBottom: 10,
+    textAlign: 'right',
+  },
+  devButton: {
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  devButtonText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
   flex: { flex: 1 },
   gearButton: {

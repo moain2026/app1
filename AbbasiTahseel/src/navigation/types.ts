@@ -39,6 +39,12 @@ export type MainStackParamList = {
   Settings: undefined;
   About: undefined;
   ServerSettings: undefined;
+  /**
+   * ReadingDetail — Wave 4. Mounted in the Drawer navigator but NOT exposed
+   * in DrawerContent (which uses a fixed MENU_ITEMS list). Reachable only
+   * via `navigation.navigate('ReadingDetail', { localUuid })` from a row tap.
+   */
+  ReadingDetail: { localUuid: string };
 };
 
 // ─── Root switch (consumed by RootNavigator) ──────────────────────────────
