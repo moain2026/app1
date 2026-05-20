@@ -180,7 +180,7 @@ cd android && ./gradlew assembleRelease
 | 1    | Pre-set  | `main`                          | Success  | ~40 MB   |
 | 2    | Wave-2   | `feat/wave-2-auth-nav`          | Success  | 44.71 MB |
 | 3    | Wave-3   | `feat/wave-3-main-shell`        | Success  | 46.87 MB |
-| 4    | Wave-4   | `feat/wave-4-readings-and-dev-bypass` | Pending  | —        |
+| 4    | Wave-4   | `feat/wave-4-readings-and-dev-bypass` | Success  | 46.93 MB |
 
 ## 12. Token & Secrets Hygiene
 
