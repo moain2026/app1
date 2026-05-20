@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TypeScript Type-Check — AbbasiTahseel
+#
+# Lightweight gate that runs on every PR. Fails the check if `tsc --noEmit`
+# reports any error. Sets a status that PRs must pass before merge (when
+# branch protection is configured in repo settings).
+#
+# Intentionally separate from build-apk.yml:
+#   • Much faster (no JDK / Android SDK / Gradle download).
+#   • Runs in parallel with the APK build for snappier PR feedback.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: TypeScript Check
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: typecheck-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    name: tsc --noEmit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: AbbasiTahseel
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache npm modules
+        uses: actions/cache@v4
+        with:
+          path: AbbasiTahseel/node_modules
+          key: ${{ runner.os }}-npm-typecheck-${{ hashFiles('AbbasiTahseel/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install Node dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run tsc --noEmit
+        run: npx tsc --noEmit

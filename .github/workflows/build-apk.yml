@@ -1,0 +1,136 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Build Android Debug APK — AbbasiTahseel
+#
+# Runs on:
+#   • push to main
+#   • every pull request targeting main
+#   • manual dispatch (Actions → Build Android Debug APK → Run workflow)
+#
+# The job:
+#   1. Checks out the repo.
+#   2. Installs Node 20, JDK 17, and the Android SDK (platforms;android-34,
+#      build-tools;34.0.0 — matching android/build.gradle versions).
+#   3. Restores Gradle + npm caches when possible.
+#   4. Runs `npm install` inside AbbasiTahseel/ (lockfile is gitignored, so
+#      `npm ci` is not usable — see .gitignore at AbbasiTahseel/.gitignore).
+#   5. Runs `npx tsc --noEmit` as a pre-flight gate (fails fast on type errors).
+#   6. Runs `./gradlew assembleDebug --no-daemon`.
+#   7. Uploads the resulting APK as an artifact, retained for 30 days.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Build Android Debug APK
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel older runs on the same ref to save minutes.
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    name: Assemble Debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    defaults:
+      run:
+        # Every step runs from inside the React Native project subdirectory.
+        working-directory: AbbasiTahseel
+
+    steps:
+      # ─── 1. Source ────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ─── 2. Toolchains ────────────────────────────────────────────────────
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          # The action installs cmdline-tools by default. We only need to make
+          # sure platform 34 and build-tools 34.0.0 are present (declared in
+          # AbbasiTahseel/android/build.gradle).
+          packages: 'platforms;android-34 build-tools;34.0.0 platform-tools'
+
+      # ─── 3. Caches ────────────────────────────────────────────────────────
+      - name: Cache npm modules
+        uses: actions/cache@v4
+        with:
+          path: AbbasiTahseel/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('AbbasiTahseel/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('AbbasiTahseel/android/**/*.gradle*', 'AbbasiTahseel/android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # ─── 4. Install JS dependencies ───────────────────────────────────────
+      # NOTE: package-lock.json is gitignored in this project, so `npm ci` is
+      # not viable. Using `npm install --no-audit --no-fund` keeps install
+      # quiet and reproducible enough for a debug build.
+      - name: Install Node dependencies
+        run: npm install --no-audit --no-fund
+
+      # ─── 5. Type-check gate ───────────────────────────────────────────────
+      - name: TypeScript type-check (tsc --noEmit)
+        run: npx tsc --noEmit
+
+      # ─── 6. Gradle assembleDebug ──────────────────────────────────────────
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
+      - name: Assemble debug APK
+        working-directory: AbbasiTahseel/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      # ─── 7. Locate + report APK ───────────────────────────────────────────
+      - name: Locate APK
+        id: apk
+        run: |
+          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          if [ ! -f "$APK_PATH" ]; then
+            echo "::error::APK not found at $APK_PATH"
+            exit 1
+          fi
+          APK_SIZE=$(du -h "$APK_PATH" | cut -f1)
+          echo "apk_path=AbbasiTahseel/$APK_PATH" >> "$GITHUB_OUTPUT"
+          echo "apk_size=$APK_SIZE" >> "$GITHUB_OUTPUT"
+          echo "### APK build succeeded" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Path | \`$APK_PATH\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Size | $APK_SIZE |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Commit | \`${GITHUB_SHA::8}\` |" >> "$GITHUB_STEP_SUMMARY"
+
+      # ─── 8. Upload artifact ───────────────────────────────────────────────
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: abbasi-tahseel-debug-apk
+          path: ${{ steps.apk.outputs.apk_path }}
+          if-no-files-found: error
+          retention-days: 30
