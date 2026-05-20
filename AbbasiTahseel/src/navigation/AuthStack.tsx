@@ -18,6 +18,7 @@ import { LicenseActivationScreen } from '@/screens/auth/LicenseActivationScreen'
 import { LoginScreen } from '@/screens/auth/LoginScreen';
 import { PinSetupScreen } from '@/screens/auth/PinSetupScreen';
 import { SplashScreen } from '@/screens/auth/SplashScreen';
+import { ServerSettingsScreen } from '@/screens/settings/ServerSettingsScreen';
 
 import type { AuthStackParamList } from './types';
 
@@ -46,6 +47,11 @@ export function AuthStack(props: AuthStackProps): React.JSX.Element {
       />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="PinSetup" component={PinSetupScreen} />
+      <Stack.Screen
+        name="ServerSettings"
+        component={ServerSettingsScreen}
+        options={{ animation: 'slide_from_left' }}
+      />
     </Stack.Navigator>
   );
 }
