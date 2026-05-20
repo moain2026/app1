@@ -1,0 +1,34 @@
+[
+  {
+    "id": "IQD",
+    "name": "دينار عراقي",
+    "symbol": "د.ع",
+    "exchange_rate": 1,
+    "is_default": true,
+    "order": 1
+  },
+  {
+    "id": "USD",
+    "name": "دولار أمريكي",
+    "symbol": "$",
+    "exchange_rate": 1310,
+    "is_default": false,
+    "order": 2
+  },
+  {
+    "id": "EUR",
+    "name": "يورو",
+    "symbol": "€",
+    "exchange_rate": 1420,
+    "is_default": false,
+    "order": 3
+  },
+  {
+    "id": "TRY",
+    "name": "ليرة تركية",
+    "symbol": "₺",
+    "exchange_rate": 39,
+    "is_default": false,
+    "order": 4
+  }
+]

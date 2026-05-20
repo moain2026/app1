@@ -1,0 +1,1452 @@
+{
+  "daily": [
+    {
+      "date_iso": "2026-05-20",
+      "timestamp": 1779266520000,
+      "readings_count": 32,
+      "bonds_count": 21,
+      "total_amount_iqd": 483000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 8,
+          "bonds": 5,
+          "amount": 144900
+        },
+        {
+          "area_name": "البياع",
+          "readings": 7,
+          "bonds": 4,
+          "amount": 96600
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 4,
+          "bonds": 4,
+          "amount": 96600
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 3,
+          "bonds": 3,
+          "amount": 72450
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 5,
+          "bonds": 4,
+          "amount": 72450
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-19",
+      "timestamp": 1779180120000,
+      "readings_count": 9,
+      "bonds_count": 15,
+      "total_amount_iqd": 1020000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 5,
+          "bonds": 5,
+          "amount": 306000
+        },
+        {
+          "area_name": "البياع",
+          "readings": 1,
+          "bonds": 3,
+          "amount": 204000
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 3,
+          "bonds": 3,
+          "amount": 204000
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 1,
+          "bonds": 3,
+          "amount": 153000
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 0,
+          "bonds": 3,
+          "amount": 153000
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-18",
+      "timestamp": 1779093720000,
+      "readings_count": 17,
+      "bonds_count": 24,
+      "total_amount_iqd": 1200000,
+      "total_amount_usd": 80,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 6,
+          "bonds": 8,
+          "amount": 360000
+        },
+        {
+          "area_name": "البياع",
+          "readings": 4,
+          "bonds": 6,
+          "amount": 240000
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 3,
+          "bonds": 5,
+          "amount": 240000
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 4,
+          "bonds": 4,
+          "amount": 180000
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 4,
+          "bonds": 5,
+          "amount": 180000
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-17",
+      "timestamp": 1779007320000,
+      "readings_count": 28,
+      "bonds_count": 6,
+      "total_amount_iqd": 336000,
+      "total_amount_usd": 80,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 7,
+          "bonds": 2,
+          "amount": 100800
+        },
+        {
+          "area_name": "البياع",
+          "readings": 5,
+          "bonds": 2,
+          "amount": 67200
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 6,
+          "bonds": 0,
+          "amount": 67200
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 2,
+          "bonds": 2,
+          "amount": 50400
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 3,
+          "bonds": 1,
+          "amount": 50400
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-16",
+      "timestamp": 1778920920000,
+      "readings_count": 23,
+      "bonds_count": 14,
+      "total_amount_iqd": 952000,
+      "total_amount_usd": 40,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 7,
+          "bonds": 3,
+          "amount": 285600
+        },
+        {
+          "area_name": "البياع",
+          "readings": 4,
+          "bonds": 3,
+          "amount": 190400
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 5,
+          "bonds": 2,
+          "amount": 190400
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 2,
+          "bonds": 1,
+          "amount": 142800
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 3,
+          "bonds": 3,
+          "amount": 142800
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-15",
+      "timestamp": 1778834520000,
+      "readings_count": 12,
+      "bonds_count": 7,
+      "total_amount_iqd": 399000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 2,
+          "bonds": 3,
+          "amount": 119700
+        },
+        {
+          "area_name": "البياع",
+          "readings": 4,
+          "bonds": 2,
+          "amount": 79800
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 0,
+          "bonds": 1,
+          "amount": 79800
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 3,
+          "bonds": 2,
+          "amount": 59850
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 3,
+          "bonds": 2,
+          "amount": 59850
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-14",
+      "timestamp": 1778748120000,
+      "readings_count": 9,
+      "bonds_count": 24,
+      "total_amount_iqd": 1128000,
+      "total_amount_usd": 40,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 4,
+          "bonds": 6,
+          "amount": 338400
+        },
+        {
+          "area_name": "البياع",
+          "readings": 1,
+          "bonds": 6,
+          "amount": 225600
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 2,
+          "bonds": 6,
+          "amount": 225600
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 3,
+          "bonds": 3,
+          "amount": 169200
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 0,
+          "bonds": 3,
+          "amount": 169200
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-13",
+      "timestamp": 1778661720000,
+      "readings_count": 32,
+      "bonds_count": 25,
+      "total_amount_iqd": 1200000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 10,
+          "bonds": 8,
+          "amount": 360000
+        },
+        {
+          "area_name": "البياع",
+          "readings": 5,
+          "bonds": 4,
+          "amount": 240000
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 7,
+          "bonds": 5,
+          "amount": 240000
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 5,
+          "bonds": 4,
+          "amount": 180000
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 3,
+          "bonds": 4,
+          "amount": 180000
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-12",
+      "timestamp": 1778575320000,
+      "readings_count": 23,
+      "bonds_count": 7,
+      "total_amount_iqd": 161000,
+      "total_amount_usd": 40,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 6,
+          "bonds": 3,
+          "amount": 48300
+        },
+        {
+          "area_name": "البياع",
+          "readings": 4,
+          "bonds": 1,
+          "amount": 32200
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 5,
+          "bonds": 1,
+          "amount": 32200
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 1,
+          "bonds": 2,
+          "amount": 24150
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 5,
+          "bonds": 1,
+          "amount": 24150
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-11",
+      "timestamp": 1778488920000,
+      "readings_count": 23,
+      "bonds_count": 7,
+      "total_amount_iqd": 462000,
+      "total_amount_usd": 40,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 9,
+          "bonds": 3,
+          "amount": 138600
+        },
+        {
+          "area_name": "البياع",
+          "readings": 5,
+          "bonds": 1,
+          "amount": 92400
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 6,
+          "bonds": 1,
+          "amount": 92400
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 2,
+          "bonds": 2,
+          "amount": 69300
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 3,
+          "bonds": 1,
+          "amount": 69300
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-10",
+      "timestamp": 1778402520000,
+      "readings_count": 27,
+      "bonds_count": 23,
+      "total_amount_iqd": 1380000,
+      "total_amount_usd": 60,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 7,
+          "bonds": 7,
+          "amount": 414000
+        },
+        {
+          "area_name": "البياع",
+          "readings": 3,
+          "bonds": 5,
+          "amount": 276000
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 6,
+          "bonds": 4,
+          "amount": 276000
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 4,
+          "bonds": 2,
+          "amount": 207000
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 6,
+          "bonds": 4,
+          "amount": 207000
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-09",
+      "timestamp": 1778316120000,
+      "readings_count": 35,
+      "bonds_count": 23,
+      "total_amount_iqd": 897000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 11,
+          "bonds": 7,
+          "amount": 269100
+        },
+        {
+          "area_name": "البياع",
+          "readings": 9,
+          "bonds": 4,
+          "amount": 179400
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 6,
+          "bonds": 4,
+          "amount": 179400
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 6,
+          "bonds": 3,
+          "amount": 134550
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 3,
+          "bonds": 3,
+          "amount": 134550
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-08",
+      "timestamp": 1778229720000,
+      "readings_count": 26,
+      "bonds_count": 12,
+      "total_amount_iqd": 396000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 9,
+          "bonds": 3,
+          "amount": 118800
+        },
+        {
+          "area_name": "البياع",
+          "readings": 4,
+          "bonds": 1,
+          "amount": 79200
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 6,
+          "bonds": 1,
+          "amount": 79200
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 6,
+          "bonds": 1,
+          "amount": 59400
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 4,
+          "bonds": 1,
+          "amount": 59400
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-07",
+      "timestamp": 1778143320000,
+      "readings_count": 28,
+      "bonds_count": 7,
+      "total_amount_iqd": 231000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 7,
+          "bonds": 3,
+          "amount": 69300
+        },
+        {
+          "area_name": "البياع",
+          "readings": 4,
+          "bonds": 1,
+          "amount": 46200
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 7,
+          "bonds": 2,
+          "amount": 46200
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 3,
+          "bonds": 0,
+          "amount": 34650
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 3,
+          "bonds": 2,
+          "amount": 34650
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-06",
+      "timestamp": 1778056920000,
+      "readings_count": 30,
+      "bonds_count": 21,
+      "total_amount_iqd": 1029000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 11,
+          "bonds": 5,
+          "amount": 308700
+        },
+        {
+          "area_name": "البياع",
+          "readings": 4,
+          "bonds": 3,
+          "amount": 205800
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 4,
+          "bonds": 4,
+          "amount": 205800
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 3,
+          "bonds": 3,
+          "amount": 154350
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 4,
+          "bonds": 2,
+          "amount": 154350
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-05",
+      "timestamp": 1777970520000,
+      "readings_count": 26,
+      "bonds_count": 6,
+      "total_amount_iqd": 336000,
+      "total_amount_usd": 60,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 10,
+          "bonds": 1,
+          "amount": 100800
+        },
+        {
+          "area_name": "البياع",
+          "readings": 3,
+          "bonds": 2,
+          "amount": 67200
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 5,
+          "bonds": 0,
+          "amount": 67200
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 3,
+          "bonds": 0,
+          "amount": 50400
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 2,
+          "bonds": 0,
+          "amount": 50400
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-04",
+      "timestamp": 1777884120000,
+      "readings_count": 31,
+      "bonds_count": 18,
+      "total_amount_iqd": 648000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 9,
+          "bonds": 5,
+          "amount": 194400
+        },
+        {
+          "area_name": "البياع",
+          "readings": 6,
+          "bonds": 4,
+          "amount": 129600
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 6,
+          "bonds": 4,
+          "amount": 129600
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 5,
+          "bonds": 4,
+          "amount": 97200
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 3,
+          "bonds": 3,
+          "amount": 97200
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-03",
+      "timestamp": 1777797720000,
+      "readings_count": 17,
+      "bonds_count": 24,
+      "total_amount_iqd": 1440000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 4,
+          "bonds": 7,
+          "amount": 432000
+        },
+        {
+          "area_name": "البياع",
+          "readings": 5,
+          "bonds": 5,
+          "amount": 288000
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 3,
+          "bonds": 5,
+          "amount": 288000
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 1,
+          "bonds": 3,
+          "amount": 216000
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 1,
+          "bonds": 3,
+          "amount": 216000
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-02",
+      "timestamp": 1777711320000,
+      "readings_count": 32,
+      "bonds_count": 21,
+      "total_amount_iqd": 504000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 12,
+          "bonds": 7,
+          "amount": 151200
+        },
+        {
+          "area_name": "البياع",
+          "readings": 5,
+          "bonds": 5,
+          "amount": 100800
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 4,
+          "bonds": 4,
+          "amount": 100800
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 6,
+          "bonds": 3,
+          "amount": 75600
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 6,
+          "bonds": 3,
+          "amount": 75600
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-05-01",
+      "timestamp": 1777624920000,
+      "readings_count": 33,
+      "bonds_count": 25,
+      "total_amount_iqd": 1050000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 10,
+          "bonds": 9,
+          "amount": 315000
+        },
+        {
+          "area_name": "البياع",
+          "readings": 6,
+          "bonds": 5,
+          "amount": 210000
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 8,
+          "bonds": 4,
+          "amount": 210000
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 4,
+          "bonds": 4,
+          "amount": 157500
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 6,
+          "bonds": 4,
+          "amount": 157500
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-04-30",
+      "timestamp": 1777538520000,
+      "readings_count": 16,
+      "bonds_count": 25,
+      "total_amount_iqd": 800000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 3,
+          "bonds": 9,
+          "amount": 240000
+        },
+        {
+          "area_name": "البياع",
+          "readings": 4,
+          "bonds": 6,
+          "amount": 160000
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 2,
+          "bonds": 6,
+          "amount": 160000
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 0,
+          "bonds": 4,
+          "amount": 120000
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 3,
+          "bonds": 5,
+          "amount": 120000
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-04-29",
+      "timestamp": 1777452120000,
+      "readings_count": 19,
+      "bonds_count": 9,
+      "total_amount_iqd": 621000,
+      "total_amount_usd": 20,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 5,
+          "bonds": 4,
+          "amount": 186300
+        },
+        {
+          "area_name": "البياع",
+          "readings": 4,
+          "bonds": 2,
+          "amount": 124200
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 5,
+          "bonds": 3,
+          "amount": 124200
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 3,
+          "bonds": 2,
+          "amount": 93150
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 1,
+          "bonds": 0,
+          "amount": 93150
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-04-28",
+      "timestamp": 1777365720000,
+      "readings_count": 30,
+      "bonds_count": 18,
+      "total_amount_iqd": 1350000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 7,
+          "bonds": 5,
+          "amount": 405000
+        },
+        {
+          "area_name": "البياع",
+          "readings": 4,
+          "bonds": 5,
+          "amount": 270000
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 8,
+          "bonds": 3,
+          "amount": 270000
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 4,
+          "bonds": 2,
+          "amount": 202500
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 3,
+          "bonds": 4,
+          "amount": 202500
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-04-27",
+      "timestamp": 1777279320000,
+      "readings_count": 14,
+      "bonds_count": 18,
+      "total_amount_iqd": 1260000,
+      "total_amount_usd": 40,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 4,
+          "bonds": 6,
+          "amount": 378000
+        },
+        {
+          "area_name": "البياع",
+          "readings": 5,
+          "bonds": 3,
+          "amount": 252000
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 1,
+          "bonds": 5,
+          "amount": 252000
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 2,
+          "bonds": 4,
+          "amount": 189000
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 3,
+          "bonds": 3,
+          "amount": 189000
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-04-26",
+      "timestamp": 1777192920000,
+      "readings_count": 28,
+      "bonds_count": 7,
+      "total_amount_iqd": 287000,
+      "total_amount_usd": 60,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 8,
+          "bonds": 3,
+          "amount": 86100
+        },
+        {
+          "area_name": "البياع",
+          "readings": 4,
+          "bonds": 0,
+          "amount": 57400
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 8,
+          "bonds": 2,
+          "amount": 57400
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 4,
+          "bonds": 1,
+          "amount": 43050
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 4,
+          "bonds": 0,
+          "amount": 43050
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-04-25",
+      "timestamp": 1777106520000,
+      "readings_count": 14,
+      "bonds_count": 15,
+      "total_amount_iqd": 480000,
+      "total_amount_usd": 60,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 3,
+          "bonds": 5,
+          "amount": 144000
+        },
+        {
+          "area_name": "البياع",
+          "readings": 4,
+          "bonds": 3,
+          "amount": 96000
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 3,
+          "bonds": 2,
+          "amount": 96000
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 0,
+          "bonds": 1,
+          "amount": 72000
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 1,
+          "bonds": 1,
+          "amount": 72000
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-04-24",
+      "timestamp": 1777020120000,
+      "readings_count": 34,
+      "bonds_count": 16,
+      "total_amount_iqd": 816000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 11,
+          "bonds": 5,
+          "amount": 244800
+        },
+        {
+          "area_name": "البياع",
+          "readings": 9,
+          "bonds": 4,
+          "amount": 163200
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 7,
+          "bonds": 2,
+          "amount": 163200
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 4,
+          "bonds": 3,
+          "amount": 122400
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 5,
+          "bonds": 2,
+          "amount": 122400
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-04-23",
+      "timestamp": 1776933720000,
+      "readings_count": 10,
+      "bonds_count": 18,
+      "total_amount_iqd": 1188000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 2,
+          "bonds": 4,
+          "amount": 356400
+        },
+        {
+          "area_name": "البياع",
+          "readings": 3,
+          "bonds": 5,
+          "amount": 237600
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 4,
+          "bonds": 5,
+          "amount": 237600
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 2,
+          "bonds": 3,
+          "amount": 178200
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 4,
+          "bonds": 4,
+          "amount": 178200
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-04-22",
+      "timestamp": 1776847320000,
+      "readings_count": 13,
+      "bonds_count": 14,
+      "total_amount_iqd": 798000,
+      "total_amount_usd": 0,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 3,
+          "bonds": 5,
+          "amount": 239400
+        },
+        {
+          "area_name": "البياع",
+          "readings": 1,
+          "bonds": 4,
+          "amount": 159600
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 4,
+          "bonds": 3,
+          "amount": 159600
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 3,
+          "bonds": 3,
+          "amount": 119700
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 3,
+          "bonds": 3,
+          "amount": 119700
+        }
+      ]
+    },
+    {
+      "date_iso": "2026-04-21",
+      "timestamp": 1776760920000,
+      "readings_count": 8,
+      "bonds_count": 7,
+      "total_amount_iqd": 273000,
+      "total_amount_usd": 60,
+      "area_breakdown": [
+        {
+          "area_name": "الكرادة",
+          "readings": 0,
+          "bonds": 1,
+          "amount": 81900
+        },
+        {
+          "area_name": "البياع",
+          "readings": 1,
+          "bonds": 2,
+          "amount": 54600
+        },
+        {
+          "area_name": "الجادرية",
+          "readings": 0,
+          "bonds": 2,
+          "amount": 54600
+        },
+        {
+          "area_name": "الكاظمية",
+          "readings": 0,
+          "bonds": 1,
+          "amount": 40950
+        },
+        {
+          "area_name": "المنصور",
+          "readings": 0,
+          "bonds": 1,
+          "amount": 40950
+        }
+      ]
+    }
+  ],
+  "weekly": [
+    {
+      "week_number": 1,
+      "week_start": "2026-05-14",
+      "week_end": "2026-05-20",
+      "readings_count": 130,
+      "bonds_count": 111,
+      "total_amount_iqd": 5518000,
+      "total_amount_usd": 240
+    },
+    {
+      "week_number": 2,
+      "week_start": "2026-05-10",
+      "week_end": "2026-05-16",
+      "readings_count": 149,
+      "bonds_count": 107,
+      "total_amount_iqd": 5682000,
+      "total_amount_usd": 220
+    },
+    {
+      "week_number": 3,
+      "week_start": "2026-05-06",
+      "week_end": "2026-05-12",
+      "readings_count": 192,
+      "bonds_count": 100,
+      "total_amount_iqd": 4556000,
+      "total_amount_usd": 140
+    },
+    {
+      "week_number": 4,
+      "week_start": "2026-05-02",
+      "week_end": "2026-05-08",
+      "readings_count": 190,
+      "bonds_count": 109,
+      "total_amount_iqd": 4584000,
+      "total_amount_usd": 60
+    },
+    {
+      "week_number": 5,
+      "week_start": "2026-04-28",
+      "week_end": "2026-05-04",
+      "readings_count": 178,
+      "bonds_count": 140,
+      "total_amount_iqd": 6413000,
+      "total_amount_usd": 20
+    },
+    {
+      "week_number": 6,
+      "week_start": "2026-04-24",
+      "week_end": "2026-04-30",
+      "readings_count": 155,
+      "bonds_count": 108,
+      "total_amount_iqd": 5614000,
+      "total_amount_usd": 180
+    },
+    {
+      "week_number": 7,
+      "week_start": "2026-04-21",
+      "week_end": "2026-04-26",
+      "readings_count": 107,
+      "bonds_count": 77,
+      "total_amount_iqd": 3842000,
+      "total_amount_usd": 180
+    },
+    {
+      "week_number": 8,
+      "week_start": "2026-04-21",
+      "week_end": "2026-04-22",
+      "readings_count": 21,
+      "bonds_count": 21,
+      "total_amount_iqd": 1071000,
+      "total_amount_usd": 60
+    }
+  ],
+  "monthly": [
+    {
+      "month_number": 1,
+      "month_name_ar": "كانون الثاني",
+      "year": 2026,
+      "readings_count": 216,
+      "bonds_count": 246,
+      "total_amount_iqd": 5418694,
+      "total_amount_usd": 304,
+      "active_collectors": 4
+    },
+    {
+      "month_number": 2,
+      "month_name_ar": "شباط",
+      "year": 2026,
+      "readings_count": 190,
+      "bonds_count": 181,
+      "total_amount_iqd": 5935088,
+      "total_amount_usd": 239,
+      "active_collectors": 4
+    },
+    {
+      "month_number": 3,
+      "month_name_ar": "آذار",
+      "year": 2026,
+      "readings_count": 315,
+      "bonds_count": 154,
+      "total_amount_iqd": 6452527,
+      "total_amount_usd": 259,
+      "active_collectors": 2
+    },
+    {
+      "month_number": 4,
+      "month_name_ar": "نيسان",
+      "year": 2026,
+      "readings_count": 337,
+      "bonds_count": 221,
+      "total_amount_iqd": 2340463,
+      "total_amount_usd": 422,
+      "active_collectors": 5
+    },
+    {
+      "month_number": 5,
+      "month_name_ar": "أيار",
+      "year": 2026,
+      "readings_count": 303,
+      "bonds_count": 208,
+      "total_amount_iqd": 5802056,
+      "total_amount_usd": 327,
+      "active_collectors": 4
+    },
+    {
+      "month_number": 6,
+      "month_name_ar": "حزيران",
+      "year": 2025,
+      "readings_count": 357,
+      "bonds_count": 156,
+      "total_amount_iqd": 4620884,
+      "total_amount_usd": 112,
+      "active_collectors": 3
+    },
+    {
+      "month_number": 7,
+      "month_name_ar": "تموز",
+      "year": 2025,
+      "readings_count": 200,
+      "bonds_count": 143,
+      "total_amount_iqd": 6237411,
+      "total_amount_usd": 263,
+      "active_collectors": 5
+    },
+    {
+      "month_number": 8,
+      "month_name_ar": "آب",
+      "year": 2025,
+      "readings_count": 207,
+      "bonds_count": 135,
+      "total_amount_iqd": 2451193,
+      "total_amount_usd": 23,
+      "active_collectors": 5
+    },
+    {
+      "month_number": 9,
+      "month_name_ar": "أيلول",
+      "year": 2025,
+      "readings_count": 327,
+      "bonds_count": 215,
+      "total_amount_iqd": 3035488,
+      "total_amount_usd": 246,
+      "active_collectors": 5
+    },
+    {
+      "month_number": 10,
+      "month_name_ar": "تشرين الأول",
+      "year": 2025,
+      "readings_count": 369,
+      "bonds_count": 229,
+      "total_amount_iqd": 2845346,
+      "total_amount_usd": 267,
+      "active_collectors": 4
+    },
+    {
+      "month_number": 11,
+      "month_name_ar": "تشرين الثاني",
+      "year": 2025,
+      "readings_count": 336,
+      "bonds_count": 175,
+      "total_amount_iqd": 2071129,
+      "total_amount_usd": 121,
+      "active_collectors": 5
+    },
+    {
+      "month_number": 12,
+      "month_name_ar": "كانون الأول",
+      "year": 2025,
+      "readings_count": 213,
+      "bonds_count": 224,
+      "total_amount_iqd": 4124503,
+      "total_amount_usd": 119,
+      "active_collectors": 4
+    }
+  ],
+  "by_area": [
+    {
+      "area_name": "الكرادة",
+      "total_subscribers": 374,
+      "active_subscribers": 205,
+      "total_readings_30d": 2273,
+      "total_bonds_30d": 1398,
+      "total_amount_iqd_30d": 24095033,
+      "avg_consumption_kwh": 575,
+      "delinquent_count": 11
+    },
+    {
+      "area_name": "البياع",
+      "total_subscribers": 417,
+      "active_subscribers": 299,
+      "total_readings_30d": 1619,
+      "total_bonds_30d": 1469,
+      "total_amount_iqd_30d": 30722893,
+      "avg_consumption_kwh": 286,
+      "delinquent_count": 20
+    },
+    {
+      "area_name": "الجادرية",
+      "total_subscribers": 288,
+      "active_subscribers": 283,
+      "total_readings_30d": 963,
+      "total_bonds_30d": 832,
+      "total_amount_iqd_30d": 34630309,
+      "avg_consumption_kwh": 258,
+      "delinquent_count": 5
+    },
+    {
+      "area_name": "الكاظمية",
+      "total_subscribers": 186,
+      "active_subscribers": 367,
+      "total_readings_30d": 869,
+      "total_bonds_30d": 1021,
+      "total_amount_iqd_30d": 42629949,
+      "avg_consumption_kwh": 522,
+      "delinquent_count": 26
+    },
+    {
+      "area_name": "المنصور",
+      "total_subscribers": 182,
+      "active_subscribers": 311,
+      "total_readings_30d": 1729,
+      "total_bonds_30d": 1164,
+      "total_amount_iqd_30d": 42045915,
+      "avg_consumption_kwh": 307,
+      "delinquent_count": 22
+    }
+  ]
+}

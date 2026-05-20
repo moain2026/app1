@@ -1,0 +1,138 @@
+; ============================================================
+; Datecs DPP-250 — Printer Test Page Template
+; ------------------------------------------------------------
+; Format: pseudo-asm; one command per line.
+;   - lines starting with ';' are comments (ignored by builder)
+;   - HEX <bytes>          : raw bytes
+;   - TEXT  <string>       : encode via encodeCp1256() and append
+;   - PLACEHOLDER <name>   : main agent will replace at runtime
+; ============================================================
+
+; ---- Initialise printer + Arabic code page ----
+HEX 1B 40                                 ; ESC @  reset
+HEX 1B 74 16                              ; ESC t 22 -> cp1256
+
+; ---- Header: centered, large ----
+HEX 1B 61 01                              ; align center
+HEX 1D 21 11                              ; size 2x2
+TEXT شركة العباسي لتوليد الكهرباء
+HEX 0A
+HEX 1D 21 00                              ; size 1x1
+TEXT صفحة اختبار الطباعة
+HEX 0A
+HEX 0A
+
+; ---- Divider ----
+HEX 1B 61 00                              ; align left
+TEXT ════════════════════════════════
+HEX 0A
+
+; ---- Arabic letters test ----
+HEX 1B 61 02                              ; align right (RTL body)
+TEXT اختبار الأحرف العربية:
+HEX 0A
+TEXT ا ب ت ث ج ح خ د ذ ر ز س ش ص ض
+HEX 0A
+TEXT ط ظ ع غ ف ق ك ل م ن ه و ي
+HEX 0A
+HEX 0A
+
+; ---- Diacritics test ----
+TEXT اختبار التشكيل:
+HEX 0A
+TEXT بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+HEX 0A
+HEX 0A
+
+; ---- Number tests ----
+TEXT اختبار الأرقام:
+HEX 0A
+TEXT الإنجليزية: 0 1 2 3 4 5 6 7 8 9
+HEX 0A
+TEXT العربية:   ٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩
+HEX 0A
+TEXT المبلغ: 75,000 د.ع
+HEX 0A
+HEX 0A
+
+; ---- Style tests ----
+HEX 1B 61 00                              ; left
+TEXT نمط عادي
+HEX 0A
+HEX 1B 45 01                              ; bold on
+TEXT نمط ثقيل (Bold)
+HEX 0A
+HEX 1B 45 00                              ; bold off
+HEX 1B 2D 01                              ; underline on
+TEXT نمط مسطر (Underline)
+HEX 0A
+HEX 1B 2D 00                              ; underline off
+HEX 1D 21 11                              ; large
+TEXT نمط كبير (Large)
+HEX 0A
+HEX 1D 21 00                              ; normal
+HEX 0A
+
+; ---- Alignment tests ----
+HEX 1B 61 00
+TEXT [يسار]   هذا السطر محاذٍ لليسار
+HEX 0A
+HEX 1B 61 01
+TEXT [وسط]   هذا السطر في الوسط
+HEX 0A
+HEX 1B 61 02
+TEXT هذا السطر محاذٍ لليمين   [يمين]
+HEX 0A
+HEX 0A
+
+; ---- Divider ----
+HEX 1B 61 00
+TEXT ════════════════════════════════
+HEX 0A
+
+; ---- Runtime placeholders ----
+HEX 1B 61 02
+TEXT التاريخ: {{DATE}}
+HEX 0A
+TEXT الوقت:  {{TIME}}
+HEX 0A
+TEXT الجهاز: {{DEVICE_NAME}}
+HEX 0A
+TEXT الطابعة: {{PRINTER_NAME}}
+HEX 0A
+TEXT النسخة: {{APP_VERSION}}
+HEX 0A
+HEX 0A
+
+; ---- Barcode test (CODE128) ----
+HEX 1B 61 01                              ; center
+HEX 1D 68 50                              ; barcode height = 80 dots
+HEX 1D 77 02                              ; barcode width = 2
+HEX 1D 48 02                              ; HRI below
+PLACEHOLDER BARCODE_CODE128 TEST-{{TIMESTAMP}}
+HEX 0A
+HEX 0A
+
+; ---- QR test ----
+PLACEHOLDER QRCODE شركة العباسي - اختبار {{TIMESTAMP}}
+HEX 0A
+HEX 0A
+
+; ---- Footer ----
+HEX 1B 61 01                              ; center
+HEX 1B 45 01                              ; bold
+TEXT ✓ اختبار ناجح
+HEX 1B 45 00
+HEX 0A
+TEXT إذا قرأت جميع الأسطر بوضوح
+HEX 0A
+TEXT فالطابعة جاهزة للاستخدام
+HEX 0A
+HEX 0A
+HEX 0A
+HEX 1B 64 03                              ; feed 3 lines
+HEX 1D 56 00                              ; cut
+
+; ============================================================
+; END OF TEST PAGE
+; ============================================================
