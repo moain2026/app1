@@ -30,7 +30,7 @@ import {
   View,
 } from 'react-native';
 
-import { useTheme } from '@/ds/theme';
+import { useTheme } from '@/design-system/theme';
 
 export interface TextFieldProps extends Omit<TextInputProps, 'style'> {
   /** Label rendered above the input. */

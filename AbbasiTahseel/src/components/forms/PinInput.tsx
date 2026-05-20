@@ -20,7 +20,7 @@ import {
   type TextInputKeyPressEventData,
 } from 'react-native';
 
-import { useTheme } from '@/ds/theme';
+import { useTheme } from '@/design-system/theme';
 
 const PIN_LENGTH = 4;
 

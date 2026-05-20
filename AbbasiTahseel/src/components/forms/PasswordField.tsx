@@ -20,7 +20,7 @@ import {
   View,
 } from 'react-native';
 
-import { useTheme } from '@/ds/theme';
+import { useTheme } from '@/design-system/theme';
 
 export interface PasswordFieldProps extends Omit<TextInputProps, 'style' | 'secureTextEntry'> {
   label: string;
