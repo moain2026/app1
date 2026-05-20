@@ -1,0 +1,54 @@
+{
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    /* ─── Strictness (NON-NEGOTIABLE per project rules) ─────────────────── */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "alwaysStrict": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    /* ─── Module resolution ─────────────────────────────────────────────── */
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"],
+      "@/app/*": ["src/app/*"],
+      "@/ds/*": ["src/design-system/*"],
+      "@/database/*": ["src/database/*"],
+      "@/services/*": ["src/services/*"],
+      "@/features/*": ["src/features/*"],
+      "@/navigation/*": ["src/navigation/*"],
+      "@/stores/*": ["src/stores/*"],
+      "@/hooks/*": ["src/hooks/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/i18n/*": ["src/i18n/*"],
+      "@/types/*": ["src/types/*"],
+      "@/assets/*": ["assets/*"]
+    },
+
+    /* ─── Misc ──────────────────────────────────────────────────────────── */
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-native",
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "allowJs": false,
+    "noEmit": true
+  },
+  "include": ["src/**/*", "index.js", "jest.setup.ts"],
+  "exclude": ["node_modules", "android", "ios", "build", "dist"]
+}

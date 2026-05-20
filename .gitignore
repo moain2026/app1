@@ -1,0 +1,6 @@
+# Reference-only analysis of the legacy app — not part of this repository.
+ElectricCollector_Full_Analysis/
+
+# OS
+.DS_Store
+Thumbs.db
