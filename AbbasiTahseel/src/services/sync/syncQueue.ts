@@ -92,7 +92,16 @@ export async function enqueue<TPayload>(opts: EnqueueOptions<TPayload>): Promise
   return database.write(async () => {
     if (existing.length > 0) {
       // Merge: update the oldest pending row, drop any duplicates.
-      const [primary, ...duplicates] = existing;
+      // `existing.length > 0` already guarantees a primary, but TS's
+      // noUncheckedIndexedAccess narrows tuple destructure to `T | undefined`.
+      const primary = existing[0];
+      const duplicates = existing.slice(1);
+      if (!primary) {
+        // Defensive — should be unreachable given the length check above.
+        throw new AppError(ErrorCodes.SYNC_QUEUE_OVERFLOW, {
+          details: { reason: 'queue-merge-primary-missing' },
+        });
+      }
       await primary.update(row => {
         row.operation = opts.operation;
         row.payloadJson = payloadJson;

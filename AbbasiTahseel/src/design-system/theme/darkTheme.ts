@@ -119,5 +119,29 @@ export const darkTheme = {
   transitions,
 } as const;
 
-export type Theme = typeof darkTheme;
+/**
+ * Theme type — widened from the dark theme's structural shape.
+ *
+ * We use a recursive "DeepWiden" helper instead of a bare `typeof darkTheme`
+ * because the latter would freeze every literal (e.g. `name: 'dark'`,
+ * `isDark: true`, `colors.background: '#121212'`) and reject the light
+ * theme which uses different literal values for the same fields.
+ *
+ * Functions (in spring/transitions) and arrays are preserved as-is.
+ */
+type Widen<T> = T extends string
+  ? string
+  : T extends number
+    ? number
+    : T extends boolean
+      ? boolean
+      : T extends ReadonlyArray<infer U>
+        ? ReadonlyArray<Widen<U>>
+        : T extends (...args: never[]) => unknown
+          ? T
+          : T extends object
+            ? { -readonly [K in keyof T]: Widen<T[K]> }
+            : T;
+
+export type Theme = Widen<typeof darkTheme>;
 export type ThemeColors = Theme['colors'];

@@ -2,7 +2,7 @@
  * Bond Model — السندات
  */
 
-import { Model, Q, type Collection } from '@nozbe/watermelondb';
+import { Model, Q, type Query } from '@nozbe/watermelondb';
 import { children, date, field, lazy, readonly, text } from '@nozbe/watermelondb/decorators';
 
 import type { BondPayment } from './BondPayment';
@@ -36,7 +36,7 @@ export class Bond extends Model {
   @readonly @date('updated_at') updatedAt!: Date;
 
   /** All payments associated with this bond (reactive). */
-  @children('bond_payments') payments!: Collection<BondPayment>;
+  @children('bond_payments') payments!: Query<BondPayment>;
 
   /** Outstanding balance = amount - amountPaid. */
   get remainingAmount(): number {

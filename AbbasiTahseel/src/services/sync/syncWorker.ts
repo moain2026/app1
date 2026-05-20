@@ -25,6 +25,8 @@
 import { AppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
 
+import type { SyncQueueItem } from '../../database/models/SyncQueueItem';
+
 import { computeNextRunAt } from './backoff';
 import {
   markEntityAsDirty,
@@ -70,12 +72,11 @@ const EMPTY_TICK: WorkerTickResult = {
 
 // ─── Process a single claimed item ────────────────────────────────────────
 async function processItem(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- queue items have varying payload shapes
-  item: any,
+  item: SyncQueueItem,
   config: SyncEngineConfig,
 ): Promise<QueueItemOutcome> {
   const handler = getPushHandler(item.entityType);
-  const payload = item.payload<unknown>();
+  const payload = item.payload();
 
   syncEvents.emit({
     type: 'push:item_started',

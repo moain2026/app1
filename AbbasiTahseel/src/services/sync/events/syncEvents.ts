@@ -14,7 +14,6 @@
 
 import type {
   PullEntityKey,
-  SyncDirection,
   SyncEntityType,
   SyncTriggerReason,
 } from '../types';
