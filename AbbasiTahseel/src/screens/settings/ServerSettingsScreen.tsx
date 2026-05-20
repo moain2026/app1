@@ -39,20 +39,30 @@ import { z } from 'zod';
 
 import { PrimaryButton, TextField } from '@/components/forms';
 import { useTheme } from '@/design-system/theme';
-import { generateDeviceId } from '@/services/security/licenseManager';
+import {
+  generateDeviceId,
+  getLegacySecureId,
+} from '@/services/security/licenseManager';
 import {
   getBranchNumber,
   getHostingIp,
   getPort,
+  getSecureIdOverride,
   getUseHttps,
   setBranchNumber,
   setHostingIp,
   setPort,
+  setSecureIdOverride,
   setUseHttps,
 } from '@/services/storage/prefs';
 
 // ─── Validation schema (UI-side, i18n keys as error messages) ─────────────
 const IP_OR_HOST = /^(?:(?:\d{1,3}\.){3}\d{1,3}|[a-zA-Z0-9][a-zA-Z0-9.-]*)$/;
+
+// secureId may be empty (use auto) OR a 8-32 char string of digits / hex /
+// letters — the legacy server stores whatever it was issued, so we don't
+// hard-restrict the character set here, only the length range.
+const SECURE_ID_OK = /^[A-Za-z0-9_-]{8,32}$/;
 
 const ServerSettingsFormSchema = z.object({
   serverAddress: z
@@ -73,6 +83,13 @@ const ServerSettingsFormSchema = z.object({
     .trim()
     .min(1, 'settings.server.invalidBranch')
     .regex(/^\d+$/, 'settings.server.invalidBranch'),
+  secureIdOverride: z
+    .string()
+    .trim()
+    .refine(
+      (v) => v.length === 0 || SECURE_ID_OK.test(v),
+      'settings.server.secureIdInvalid',
+    ),
   useHttps: z.boolean(),
 });
 
@@ -84,6 +101,7 @@ export function ServerSettingsScreen(): React.JSX.Element {
   const navigation = useNavigation();
 
   const [deviceId, setDeviceId] = useState<string>('');
+  const [autoSecureId, setAutoSecureId] = useState<string>('');
 
   // Load defaults from prefs on mount.
   const {
@@ -96,6 +114,7 @@ export function ServerSettingsScreen(): React.JSX.Element {
       serverAddress: getHostingIp(),
       port: getPort(),
       branch: getBranchNumber(),
+      secureIdOverride: getSecureIdOverride(),
       useHttps: getUseHttps(),
     },
     mode: 'onSubmit',
@@ -103,15 +122,17 @@ export function ServerSettingsScreen(): React.JSX.Element {
 
   useEffect(() => {
     let cancelled = false;
-    generateDeviceId()
-      .then((id) => {
+    void Promise.all([generateDeviceId(), getLegacySecureId()])
+      .then(([id, legacy]) => {
         if (!cancelled) {
           setDeviceId(id);
+          setAutoSecureId(legacy);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setDeviceId('—');
+          setAutoSecureId('—');
         }
       });
     return () => {
@@ -123,6 +144,7 @@ export function ServerSettingsScreen(): React.JSX.Element {
     setHostingIp(values.serverAddress);
     setPort(values.port);
     setBranchNumber(values.branch);
+    setSecureIdOverride(values.secureIdOverride);
     setUseHttps(values.useHttps);
     ToastAndroid.show(t('settings.server.saved'), ToastAndroid.SHORT);
     if (navigation.canGoBack()) {
@@ -228,6 +250,45 @@ export function ServerSettingsScreen(): React.JSX.Element {
                   errors.branch?.message ? t(errors.branch.message) : undefined
                 }
               />
+            )}
+          />
+
+          {/* secureId override — the legacy backend has each user pinned to a
+              specific 10-digit decimal (derived from the legacy device's
+              ANDROID_ID). Operators migrating from the legacy app must paste
+              that value here so the server-side record continues to match. */}
+          <Controller
+            control={control}
+            name="secureIdOverride"
+            render={({ field }) => (
+              <View>
+                <TextField
+                  label={t('settings.server.secureIdLabel')}
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  placeholder={t('settings.server.secureIdPlaceholder')}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="default"
+                  maxLength={32}
+                  error={
+                    errors.secureIdOverride?.message
+                      ? t(errors.secureIdOverride.message)
+                      : undefined
+                  }
+                />
+                <Text
+                  style={[styles.hint, { color: colors.textTertiary }]}
+                  selectable
+                >
+                  {t('settings.server.secureIdAuto', {
+                    value: autoSecureId || '—',
+                  })}
+                </Text>
+                <Text style={[styles.hint, { color: colors.textTertiary }]}>
+                  {t('settings.server.secureIdHint')}
+                </Text>
+              </View>
             )}
           />
 
@@ -338,6 +399,12 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   flex: { flex: 1 },
+  hint: {
+    fontSize: 11,
+    marginTop: 2,
+    paddingHorizontal: 4,
+    textAlign: 'left',
+  },
   row: {
     borderTopColor: 'transparent',
     flexDirection: 'row',

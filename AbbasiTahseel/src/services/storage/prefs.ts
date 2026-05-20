@@ -40,6 +40,15 @@ export const PREF_KEYS = {
   USE_HTTPS: 'net.use_https',
   APP_ID: 'net.app_id',
   BRANCH_NUMBER: 'net.branch_number',
+  /**
+   * Manual override for the `secureId` field sent during /Login. When empty,
+   * `getLegacySecureId()` is used (10-digit decimal derived from the first
+   * 8 hex chars of ANDROID_ID, matching `Defence.getDeviceId()` of the
+   * legacy app). When set, this overrides the auto value verbatim — useful
+   * when migrating from a legacy device whose `secureId` is already
+   * registered server-side.
+   */
+  SECURE_ID_OVERRIDE: 'net.secure_id_override',
 
   // UI
   THEME: 'ui.theme',
@@ -130,6 +139,23 @@ export function getBranchNumber(): string {
 
 export function setBranchNumber(value: string): void {
   storage.set(PREF_KEYS.BRANCH_NUMBER, value);
+}
+
+/**
+ * Manual secureId override. Empty string means "use the auto-computed
+ * legacy-compatible value" (see `getLegacySecureId` in licenseManager).
+ */
+export function getSecureIdOverride(): string {
+  return storage.getString(PREF_KEYS.SECURE_ID_OVERRIDE) ?? '';
+}
+
+export function setSecureIdOverride(value: string): void {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    storage.delete(PREF_KEYS.SECURE_ID_OVERRIDE);
+    return;
+  }
+  storage.set(PREF_KEYS.SECURE_ID_OVERRIDE, trimmed);
 }
 
 /**

@@ -69,6 +69,23 @@ export function installErrorInterceptor(http: AxiosInstance): void {
         code = classifyNetworkError(axiosError);
       }
 
+      // Preserve the raw response body verbatim so callers can surface the
+      // server's actual error message (the legacy backend returns plain
+      // Arabic text or a JSON envelope inside `error.response.data`).
+      const rawData = axiosError.response?.data;
+      const responseBody =
+        typeof rawData === 'string'
+          ? rawData
+          : rawData !== undefined && rawData !== null
+            ? (() => {
+                try {
+                  return JSON.stringify(rawData);
+                } catch {
+                  return String(rawData);
+                }
+              })()
+            : '';
+
       const appError = new AppError(code, {
         cause: error,
         httpStatus: status,
@@ -76,6 +93,7 @@ export function installErrorInterceptor(http: AxiosInstance): void {
           url: config?.url,
           method: config?.method,
           baseURL: config?.baseURL,
+          responseBody,
         },
       });
 

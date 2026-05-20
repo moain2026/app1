@@ -21,6 +21,7 @@ import {
   Alert,
   Image,
   Keyboard,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -34,6 +35,7 @@ import { z } from 'zod';
 import { PasswordField, PrimaryButton, TextField } from '@/components/forms';
 import { useTheme } from '@/design-system/theme';
 import { http } from '@/services/api/httpClient';
+import { getSecureId } from '@/services/security/licenseManager';
 import { getBaseUrl } from '@/services/storage/prefs';
 import { getAdminPinHash } from '@/services/storage/secureStorage';
 import { useAuthStore } from '@/stores/authStore';
@@ -60,9 +62,12 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
 
   const isLoading = useAuthStore((s) => s.isLoading);
   const error = useAuthStore((s) => s.error);
+  const lastLoginError = useAuthStore((s) => s.lastLoginError);
   const login = useAuthStore((s) => s.login);
   const clearError = useAuthStore((s) => s.clearError);
   const [isTestingConnection, setTestingConnection] = useState<boolean>(false);
+  const [secureIdPreview, setSecureIdPreview] = useState<string>('');
+  const [errorModalVisible, setErrorModalVisible] = useState<boolean>(false);
 
   const {
     control,
@@ -78,6 +83,40 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
     // Clear any stale store error when this screen mounts.
     clearError();
   }, [clearError]);
+
+  // Resolve the secureId once (override or auto) so we can preview it.
+  useEffect(() => {
+    let cancelled = false;
+    void getSecureId()
+      .then((v) => {
+        if (!cancelled) setSecureIdPreview(v);
+      })
+      .catch(() => {
+        if (!cancelled) setSecureIdPreview('—');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Build the human-readable error details block shown in the modal.
+  const errorDetailsText = lastLoginError
+    ? [
+        `URL: ${lastLoginError.url}`,
+        `Method: ${lastLoginError.method}`,
+        `Status: ${lastLoginError.responseStatus ?? '—'}`,
+        `Code: ${lastLoginError.errorCode}`,
+        `Time: ${lastLoginError.timestamp}`,
+        '',
+        'Request body:',
+        JSON.stringify(lastLoginError.requestBody, null, 2),
+        '',
+        'Response body:',
+        lastLoginError.responseBody.length > 0
+          ? lastLoginError.responseBody
+          : '<empty>',
+      ].join('\n')
+    : '';
 
   const onSubmit = handleSubmit(async (values) => {
     Keyboard.dismiss();
@@ -250,8 +289,80 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
               </Text>
             </Pressable>
           ) : null}
+
+          {/* secureId preview (small, always visible) — the operator can
+              verify visually that the value the app sends matches the one
+              the legacy device used. Truncated to first 12 chars.        */}
+          <Text
+            style={[styles.secureIdPreview, { color: colors.textTertiary }]}
+            selectable
+          >
+            {t('auth.login.secureIdInUse', {
+              value:
+                secureIdPreview.length > 12
+                  ? `${secureIdPreview.slice(0, 12)}…`
+                  : secureIdPreview || '—',
+            })}
+          </Text>
+
+          {/* Copy error details — appears only after a failed login. */}
+          {lastLoginError !== null ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setErrorModalVisible(true)}
+              style={[styles.debugBtn, { borderColor: colors.danger }]}
+            >
+              <Text style={[styles.debugBtnText, { color: colors.danger }]}>
+                {t('auth.login.copyError')}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
       </ScrollView>
+
+      <Modal
+        visible={errorModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setErrorModalVisible(false)}
+      >
+        <View style={[styles.modalBackdrop, { backgroundColor: colors.backdrop }]}>
+          <View
+            style={[
+              styles.modalCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Text
+              style={[styles.modalTitle, { color: colors.textPrimary }]}
+            >
+              {t('auth.login.copyError')}
+            </Text>
+            <ScrollView style={styles.modalScroll}>
+              <Text
+                style={[styles.modalBody, { color: colors.textSecondary }]}
+                selectable
+              >
+                {errorDetailsText}
+              </Text>
+            </ScrollView>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setErrorModalVisible(false)}
+              style={[styles.modalClose, { borderColor: colors.border }]}
+            >
+              <Text
+                style={[styles.debugBtnText, { color: colors.textPrimary }]}
+              >
+                {t('sync.actions.close')}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -279,6 +390,47 @@ const styles = StyleSheet.create({
   debugBtnText: {
     fontSize: 12,
     fontWeight: '600',
+  },
+  modalBackdrop: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  modalBody: {
+    fontFamily: 'monospace',
+    fontSize: 11,
+    lineHeight: 16,
+    textAlign: 'left',
+  },
+  modalCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    maxHeight: '80%',
+    padding: 16,
+    width: '100%',
+  },
+  modalClose: {
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 12,
+    paddingVertical: 10,
+  },
+  modalScroll: {
+    marginTop: 8,
+    maxHeight: 380,
+  },
+  modalTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    textAlign: 'right',
+  },
+  secureIdPreview: {
+    fontFamily: 'monospace',
+    fontSize: 11,
+    marginTop: 8,
+    textAlign: 'center',
   },
   flex: { flex: 1 },
   gearButton: {

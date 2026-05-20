@@ -41,6 +41,8 @@
 import DeviceInfo from 'react-native-device-info';
 import * as Keychain from 'react-native-keychain';
 
+import { getSecureIdOverride } from '@/services/storage/prefs';
+
 // ─── Keychain configuration ───────────────────────────────────────────────
 const LICENSE_SERVICE = 'com.alabbasi.tahseel.license';
 const LICENSE_USERNAME = 'license';
@@ -78,6 +80,70 @@ export async function generateDeviceId(): Promise<string> {
   }
   // Last-resort fallback — DeviceInfo should never fail on Android.
   return 'unknown-device';
+}
+
+/**
+ * Compute the LEGACY-compatible secureId.
+ *
+ * Mirrors `com.yd.electricecollector.Defence.getDeviceId()` of the legacy
+ * Java app, which is what the backend has registered for existing users:
+ *
+ *   Long.toString(
+ *     Long.parseLong(
+ *       Settings.Secure.getString(ctx, "android_id").substring(0, 8),
+ *       16
+ *     )
+ *   )
+ *
+ * In plain English:
+ *   1. Take the device ANDROID_ID (a 16-hex-char string like
+ *      "9993a14105fc49aa").
+ *   2. Slice the first 8 hex chars ("9993a141").
+ *   3. Parse those as a base-16 integer (= 2576949569).
+ *   4. Convert back to a decimal string ("2576949569") — a 10-digit number.
+ *
+ * Returns 'unknown-device' on failure so the call chain never throws.
+ */
+export async function getLegacySecureId(): Promise<string> {
+  try {
+    const raw = await DeviceInfo.getUniqueId();
+    if (!raw || raw.length < 8) {
+      return 'unknown-device';
+    }
+    // Strip any prefix like "android-" and non-hex chars defensively.
+    const hex = raw.replace(/[^0-9a-fA-F]/g, '');
+    const first8 = hex.slice(0, 8);
+    if (first8.length !== 8) {
+      return 'unknown-device';
+    }
+    // Number.MAX_SAFE_INTEGER is 9_007_199_254_740_992 (~16 hex digits) so
+    // 8-hex-digit values fit comfortably without precision loss.
+    const decimal = parseInt(first8, 16);
+    if (!Number.isFinite(decimal)) {
+      return 'unknown-device';
+    }
+    return decimal.toString(10);
+  } catch {
+    return 'unknown-device';
+  }
+}
+
+/**
+ * Resolves the secureId value used by /Login.
+ *
+ * Resolution order:
+ *   1. Manual override saved in ServerSettings (`getSecureIdOverride()`),
+ *      if non-empty — used verbatim (no normalization). This lets the
+ *      operator paste the exact value the legacy device used so the
+ *      server-side record continues to match.
+ *   2. Auto-computed legacy-compatible value (`getLegacySecureId()`).
+ */
+export async function getSecureId(): Promise<string> {
+  const override = getSecureIdOverride();
+  if (override.length > 0) {
+    return override;
+  }
+  return getLegacySecureId();
 }
 
 /**

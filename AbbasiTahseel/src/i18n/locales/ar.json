@@ -48,7 +48,10 @@
       "testConnection": "اختبار الاتصال",
       "testTesting": "جاري الاختبار...",
       "testReachable": "تم الوصول إلى الخادم",
-      "testFailed": "تعذر الوصول إلى الخادم"
+      "testFailed": "تعذر الوصول إلى الخادم",
+      "copyError": "📋 نسخ تفاصيل الخطأ",
+      "errorCopied": "تم نسخ تفاصيل الخطأ",
+      "secureIdInUse": "الرقم التسلسلي المستخدم: {{value}}"
     },
     "pin": {
       "title": "أنشئ رمز PIN",
@@ -80,7 +83,12 @@
       "portPlaceholder": "3000",
       "branch": "رقم الفرع",
       "branchPlaceholder": "1",
-      "serialNumber": "الرقم التسلسلي للجهاز",
+      "secureIdLabel": "الرقم التسلسلي للجهاز (legacy)",
+      "secureIdPlaceholder": "اتركه فارغاً للتلقائي",
+      "secureIdHint": "إذا كنت تنتقل من النظام القديم، أدخل القيمة المعروضة في إعداداته (مثل 2098897319) حتى يطابقها الخادم.",
+      "secureIdAuto": "الافتراضي التلقائي: {{value}}",
+      "secureIdInvalid": "يجب أن يكون بطول 8-32 حرفاً (أرقام/حروف/_-)",
+      "serialNumber": "معرّف الجهاز (Device ID)",
       "useHttps": "استخدام HTTPS",
       "save": "حفظ",
       "cancel": "تراجع",
