@@ -29,7 +29,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { z } from 'zod';
 
 import { PasswordField, PrimaryButton, TextField } from '@/components/forms';
-import { useTheme } from '@/ds/theme';
+import { useTheme } from '@/design-system/theme';
 import { getAdminPinHash } from '@/services/storage/secureStorage';
 import { useAuthStore } from '@/stores/authStore';
 

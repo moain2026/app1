@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/ds/theme';
+import { useTheme } from '@/design-system/theme';
 import { useAuthStore } from '@/stores/authStore';
 
 export function HomeScreen(): React.JSX.Element {

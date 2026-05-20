@@ -19,7 +19,7 @@ import {
   View,
 } from 'react-native';
 
-import { useTheme } from '@/ds/theme';
+import { useTheme } from '@/design-system/theme';
 
 export interface PrimaryButtonProps {
   title: string;
