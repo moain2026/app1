@@ -27,6 +27,7 @@ import {
   LoginUserResponseSchema,
   type LoginUserResponse,
 } from '@/services/api/schemas/auth';
+import { generateDeviceId } from '@/services/security/licenseManager';
 import {
   clearAllAuthCredentials,
   getAccessToken,
@@ -36,7 +37,10 @@ import {
   setLastUsername,
   setRefreshToken,
 } from '@/services/storage/secureStorage';
-import { setLastLoginAt } from '@/services/storage/prefs';
+import { getBranchNumber, setLastLoginAt } from '@/services/storage/prefs';
+import { logger } from '@/utils/logger';
+
+const log = logger.scope('AuthStore');
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -109,27 +113,42 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   error: null,
 
   // ─── login ──────────────────────────────────────────────────────────
+  //
+  // Wire-compatible with the LEGACY AuthRepository (Java app) contract:
+  //   POST /electric/Login
+  //   Content-Type: application/json
+  //   { "username": "...", "password": "...", "appId": "<branch>", "secureId": "<deviceId>" }
+  //   → Users object with embedded `access_token` (+ optional refresh_token)
+  //
+  // `appId` comes from prefs (branch number — default "1"). `secureId` is
+  // the device id used by license activation (stable across reinstalls).
   async login(username, password) {
     set({ isLoading: true, error: null });
     try {
+      const appId = getBranchNumber();
+      const secureId = await generateDeviceId();
+      log.debug('login attempt', { username, appId, hasSecureId: secureId.length > 0 });
+
       const raw = await api.call<unknown>('login', {
-        body: { username, password },
+        body: { username, password, appId, secureId },
       });
       const parsed = LoginUserResponseSchema.safeParse(raw);
       if (!parsed.success) {
+        log.warn('login response failed schema validation');
         set({ isLoading: false, error: 'auth.login.invalidCredentials' });
         return false;
       }
 
       const u = parsed.data;
       const access = u.access_token ?? '';
-      const refresh = u.refresh_token ?? '';
+      // Legacy /Login does NOT return a separate refresh_token — the same
+      // access_token is used until /refresh is called explicitly. Treat the
+      // refresh_token as optional and fall back to the access_token so the
+      // session is still considered authenticated.
+      const refresh = u.refresh_token ?? access;
 
-      // The legacy /login may or may not embed tokens. If absent, the
-      // caller should follow up with /UserAuth. For Wave 2 we treat the
-      // embedded-token shape as the success path and surface an explicit
-      // error otherwise (the secondary /UserAuth flow is Wave 3 work).
-      if (access.length === 0 || refresh.length === 0) {
+      if (access.length === 0) {
+        log.warn('login response had no access_token');
         set({ isLoading: false, error: 'auth.login.invalidCredentials' });
         return false;
       }
@@ -151,8 +170,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
         error: null,
       });
+      log.info('login success', { username });
       return true;
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      log.warn('login threw', { message: msg });
       set({
         isLoading: false,
         error:

@@ -63,8 +63,15 @@ const form = (
 // ─── The registry ─────────────────────────────────────────────────────────
 export const Endpoints = {
   // ─── Auth ───────────────────────────────────────────────────────────────
-  login: form('login', 'POST', 'تسجيل دخول (form-urlencoded)', false),
-  userAuth: json('UserAuth', 'POST', 'مصادقة المستخدم (JSON)', false),
+  // Primary login — matches the LEGACY AuthRepository contract:
+  //   POST /electric/Login  with JSON body { username, password, appId, secureId }
+  //   → returns the Users object (with embedded access_token).
+  // The path is INTENTIONALLY capitalised ("Login") to mirror the legacy
+  // server's case-sensitive routing — see ElectricCollector_Full_Analysis/
+  // source_code/com/yd/electricecollector/model/AuthRepository.java line 21.
+  login: json('Login', 'POST', 'تسجيل دخول (JSON — Users response)', false),
+  // Alternate auth endpoint (token-only response). Kept for future use.
+  userAuth: json('UserAuth', 'POST', 'مصادقة المستخدم (JSON — token only)', false),
   refresh: form('refresh', 'POST', 'تجديد التوكن', false),
   register: form('register', 'POST', 'تسجيل مستخدم جديد', false),
 

@@ -14,10 +14,11 @@
  */
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
+  Alert,
   Image,
   Keyboard,
   Pressable,
@@ -32,6 +33,8 @@ import { z } from 'zod';
 
 import { PasswordField, PrimaryButton, TextField } from '@/components/forms';
 import { useTheme } from '@/design-system/theme';
+import { http } from '@/services/api/httpClient';
+import { getBaseUrl } from '@/services/storage/prefs';
 import { getAdminPinHash } from '@/services/storage/secureStorage';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -59,6 +62,7 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
   const error = useAuthStore((s) => s.error);
   const login = useAuthStore((s) => s.login);
   const clearError = useAuthStore((s) => s.clearError);
+  const [isTestingConnection, setTestingConnection] = useState<boolean>(false);
 
   const {
     control,
@@ -94,6 +98,41 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
 
   const banner =
     error !== null && error.length > 0 ? t(error) : undefined;
+
+  // DEV-only Test Connection — pings the configured base URL with a GET
+  // and surfaces the status/error so the operator can distinguish between
+  // (a) server unreachable, (b) wrong endpoint, (c) wrong credentials.
+  async function onTestConnection(): Promise<void> {
+    setTestingConnection(true);
+    const baseUrl = getBaseUrl();
+    try {
+      const response = await http.request<unknown>({
+        url: '',
+        method: 'GET',
+        timeout: 8_000,
+      });
+      Alert.alert(
+        t('auth.login.testConnection'),
+        `${t('auth.login.testReachable')}\n\nURL: ${baseUrl}\nStatus: ${response.status}`,
+      );
+    } catch (err) {
+      const code =
+        err && typeof err === 'object' && 'code' in err
+          ? String((err as { code?: unknown }).code ?? '')
+          : '';
+      const status =
+        err && typeof err === 'object' && 'httpStatus' in err
+          ? String((err as { httpStatus?: unknown }).httpStatus ?? '')
+          : '';
+      const message = err instanceof Error ? err.message : String(err);
+      Alert.alert(
+        t('auth.login.testConnection'),
+        `${t('auth.login.testFailed')}\n\nURL: ${baseUrl}\nCode: ${code || '—'}\nStatus: ${status || '—'}\n${message}`,
+      );
+    } finally {
+      setTestingConnection(false);
+    }
+  }
 
   return (
     <SafeAreaView
@@ -196,6 +235,21 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
           <Text style={[styles.forgot, { color: colors.textTertiary }]}>
             {t('auth.login.forgotPassword')}
           </Text>
+
+          {__DEV__ ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void onTestConnection()}
+              disabled={isTestingConnection}
+              style={[styles.debugBtn, { borderColor: colors.border }]}
+            >
+              <Text style={[styles.debugBtnText, { color: colors.textSecondary }]}>
+                {isTestingConnection
+                  ? t('auth.login.testTesting')
+                  : `🐛 ${t('auth.login.testConnection')}`}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -213,6 +267,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: 24,
     padding: 20,
+  },
+  debugBtn: {
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  debugBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   flex: { flex: 1 },
   gearButton: {
