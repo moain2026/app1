@@ -1,0 +1,68 @@
+{
+  "common": {
+    "appName": "العباسي تحصيل",
+    "loading": "جاري التحميل...",
+    "error": "حدث خطأ",
+    "retry": "إعادة المحاولة",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "save": "حفظ",
+    "next": "التالي",
+    "back": "رجوع",
+    "ok": "موافق",
+    "copy": "نسخ",
+    "copied": "تم النسخ"
+  },
+  "auth": {
+    "license": {
+      "title": "تفعيل الترخيص",
+      "subtitle": "أدخل مفتاح الترخيص لتفعيل التطبيق على هذا الجهاز",
+      "deviceId": "معرف الجهاز",
+      "deviceIdHint": "أرسل هذا المعرف إلى المسؤول للحصول على مفتاح الترخيص",
+      "copyDeviceId": "نسخ",
+      "licenseKey": "مفتاح الترخيص",
+      "licenseKeyPlaceholder": "أدخل المفتاح هنا",
+      "activate": "تفعيل",
+      "activating": "جاري التفعيل...",
+      "invalidKey": "مفتاح الترخيص غير صحيح",
+      "saveFailed": "فشل حفظ الترخيص. حاول مرة أخرى.",
+      "success": "تم تفعيل الترخيص بنجاح"
+    },
+    "login": {
+      "title": "تسجيل الدخول",
+      "subtitle": "أدخل بياناتك للمتابعة",
+      "username": "اسم المستخدم",
+      "usernamePlaceholder": "أدخل اسم المستخدم",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "submit": "تسجيل الدخول",
+      "submitting": "جاري تسجيل الدخول...",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "invalidCredentials": "بيانات الدخول غير صحيحة",
+      "networkError": "تعذر الاتصال بالخادم. تحقق من الشبكة.",
+      "usernameRequired": "اسم المستخدم مطلوب",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "passwordTooShort": "كلمة المرور قصيرة جداً"
+    },
+    "pin": {
+      "title": "أنشئ رمز PIN",
+      "subtitle": "لحماية حسابك",
+      "enterPin": "أدخل رمز PIN",
+      "confirmPin": "أعد إدخال PIN",
+      "save": "حفظ",
+      "saving": "جاري الحفظ...",
+      "mismatch": "الـ PIN غير متطابق",
+      "tooShort": "PIN يجب أن يكون 4 أرقام",
+      "saveFailed": "فشل حفظ الـ PIN"
+    },
+    "splash": {
+      "loading": "جاري التحميل..."
+    }
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "minLength": "يجب أن لا يقل عن {{count}} حرف",
+    "maxLength": "يجب أن لا يزيد عن {{count}} حرف",
+    "email": "بريد إلكتروني غير صحيح"
+  }
+}
