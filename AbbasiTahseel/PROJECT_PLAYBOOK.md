@@ -375,11 +375,19 @@ GET    /electric/report1                  → ReportRow[]
 - [x] Models (12 models).
 - [ ] Repositories (initial CRUD).
 
-### Phase 3 — Network Layer (Days 7-9)
-- [ ] Axios instance + interceptors (auth, refresh, retry, error).
-- [ ] endpoints.ts (31 endpoint typed).
-- [ ] DTO mappers (legacy ↔ clean UI).
-- [ ] Zod schemas للتحقق.
+### Phase 3 — Network Layer (Days 7-9) ✅ COMPLETE
+- [x] Storage: `react-native-keychain` (tokens/PIN) + `react-native-mmkv` (prefs).
+- [x] Logger utility (redacts tokens/passwords automatically).
+- [x] AppError taxonomy + `Result<T>` + Arabic user messages.
+- [x] Zod schemas (auth + reading + lists + reports + common loose coercers).
+- [x] DTO mappers (legacy `noadad/ks/kh/asts/cas` ↔ clean domain types).
+- [x] Endpoints registry (`endpoints.ts`) — all 31 endpoints typed.
+- [x] Axios instance (`httpClient.ts`) — lazy baseURL from MMKV.
+- [x] Auth interceptor (Bearer header + `X-Skip-Auth` opt-out).
+- [x] Refresh interceptor — **fixes the "+a" bug** from `CustomAuthenticator.java`, single-flight dedup, replays original request once.
+- [x] Retry interceptor — exponential backoff with jitter; only retries unsafe methods when `X-Idempotent: 1`.
+- [x] Error interceptor — converts every failure to typed `AppError`.
+- [x] Typed API façade (`apiClient.ts`) — `api.call('saveReading', { body, idempotent: true })`.
 
 ### Phase 4 — Sync Engine (Days 10-12)
 - [ ] SyncQueue manager.
@@ -452,8 +460,8 @@ GET    /electric/report1                  → ReportRow[]
 | **Phase 0 — Setup** | 🟡 In Progress | بنية المجلدات + Playbook ✅. باقي package.json + configs. |
 | **Phase 1 — Design System Tokens** | 🟡 In Progress | الـ tokens ✅ — يبقى components. |
 | **Phase 2 — Database Schema + Models** | 🟡 In Progress | Schema + Models ✅ — يبقى Repositories. |
-| Phase 3 — Network | ⏳ Pending | |
-| Phase 4 — Sync Engine | ⏳ Pending | |
+| **Phase 3 — Network Layer** | ✅ Complete | Storage + Logger + Errors + Zod + Mappers + Endpoints + 4 Interceptors + Typed Client. The legacy `+a` refresh-token bug is fixed. |
+| Phase 4 — Sync Engine | ⏳ Next | |
 | Phases 5-13 | ⏳ Pending | |
 
 ---
@@ -488,6 +496,29 @@ GET    /electric/report1                  → ReportRow[]
 
 ### ADR-008: Bottom Tabs (4) + Notched FAB في المنتصف
 - **السبب:** "إدخال قراءة" هو الفعل الأكثر تكراراً (>50 مرة في اليوم).
+
+### ADR-009: لا نُكرّر خلل "+a" في refresh-token
+- **القرار:** في `refresh.interceptor.ts` نرسل `refresh_token` كما هو **بدون** إضافة `"a"` في النهاية.
+- **خلفية:** `CustomAuthenticator.java` السطر 41 كان يستخدم `HtmlTags.A` (تساوي `"a"`) من مكتبة iText بطريق الخطأ:
+  ```java
+  service.refresh(token.getRefreshToken() + HtmlTags.A)
+  ```
+- **آلية الأمان:** الـ Interceptor يحوي ثابتاً `BUG_COMPAT_APPEND_A = false`. إذا تأكد فريق التشغيل أن سيرفر إنتاج معيّن لا يزال يتطلب اللاحقة، يُحوَّل الثابت إلى `true` بدون تغيير معماري آخر.
+- **آلية أمان إضافية:** Single-flight dedup — استدعاءات 401 المتزامنة تنتظر نفس `refreshInFlight` Promise.
+
+### ADR-010: Zod كحارس بوابة (Validation Gate)
+- **القرار:** **كل** استجابة من السيرفر القديم تمر عبر Zod schema قبل الوصول إلى WatermelonDB أو الـ UI.
+- **السبب:** الباك إند القديم يستخدم `MoshiConverterFactory.create().asLenient()` ويعيد أنواعاً مرنة (`"150"` بدل `150`، سلاسل فارغة بدل nulls). نحن نستخدم `zNumberLoose`/`zIntLoose`/`zBoolLoose`/`zDateLoose` لتنقية البيانات.
+- **المكسب:** صفر بيانات قذرة في الـ DB. أعطاب schema تُلتقط فوراً مع `AppError(VALIDATION_SERVER_RESPONSE)`.
+
+### ADR-011: Keychain للأسرار + MMKV للإعدادات
+- **القرار:** فصل صارم بين تخزين الأسرار (tokens، PIN hash) في `react-native-keychain` (AES-GCM + Android KeyStore) وبين الإعدادات الخفيفة في `react-native-mmkv` (memory-mapped، sync read).
+- **سبب MMKV للإعدادات:** القراءة المتزامنة (sync) أساسية لتجنب FOUC في ThemeProvider.
+- **سبب Keychain للأسرار:** بديل أمن عن `SharedPreferences("prefs")` التي كانت تحفظ كلمة السر و التوكنات نصاً مكشوفاً.
+
+### ADR-012: Logger مع Auto-Redaction
+- **القرار:** لا يوجد `console.log` مباشر في الكود. كل ما يُسجَّل يمر عبر `utils/logger.ts` الذي يكتشف المفاتيح الحساسة (`token`, `password`, `secret`, `authorization`, `pin`, `secureId`) ويستبدل قيمها بـ `<N chars: abcd…>`.
+- **النتيجة:** آمن للتشغيل في الإنتاج، لا تسريب صدفي لتوكن في الـ logs أو في Sentry لاحقاً.
 
 ---
 
@@ -540,6 +571,35 @@ GET    /electric/report1                  → ReportRow[]
 - ✅ Themes (dark + light).
 - ✅ WatermelonDB Schema + 12 Models.
 - ✅ تنزيل شعار العباسي إلى `assets/logo/abbasi_logo.png`.
+
+### v1.1.0 — 2026-05-20 — Phase 3 (Network Layer)
+- ✅ **Storage Layer:**
+  - `services/storage/secureStorage.ts` — Keychain (AES-GCM) لتوكنات + PIN hash + last username.
+  - `services/storage/prefs.ts` — MMKV لـ baseUrl/port/HostingIP/theme/sync timestamps.
+- ✅ **Utilities:**
+  - `utils/logger.ts` — scoped logger + auto-redaction للأسرار (tokens, passwords, PIN).
+  - `utils/errors.ts` — `AppError` taxonomy (29 رمز خطأ مع رسائل عربية) + `Result<T>` + `runSafe()`.
+- ✅ **Validation (Zod):**
+  - `services/api/schemas/common.ts` — coercers مرنة (zIntLoose، zBoolLoose، zDateLoose...).
+  - `services/api/schemas/auth.ts` — login/refresh/register/userAuth requests + AccessTokenResponse.
+  - `services/api/schemas/reading.ts` — ItemReadingDto (12 حقل) + list/mutation responses.
+  - `services/api/schemas/lists.ts` — Account/Place/TGroup/Tblh/User/Currency/Bond/BondPayment/CompanyInfo.
+  - `services/api/schemas/reports.ts` — صف تقرير عام (key-value).
+- ✅ **DTO Mappers:**
+  - `services/api/mappers/auth.mapper.ts` — `tokensFromResponse`, `userFromLoginResponse`.
+  - `services/api/mappers/reading.mapper.ts` — `readingFromDto`, `readingToDto`, `readingDtoToDbRow`, `parseReadingList`.
+  - `services/api/mappers/lists.mapper.ts` — 8 parser للقوائم المرجعية.
+  - `services/api/mappers/reports.mapper.ts` — `parseReportList`, `parseAccountBalance`.
+- ✅ **Network Layer:**
+  - `services/api/endpoints.ts` — 31 endpoint مسجّلة بأنواع صارمة.
+  - `services/api/httpClient.ts` — Axios instance مع lazy baseURL من MMKV.
+  - `services/api/interceptors/auth.interceptor.ts` — Bearer header + skip flag.
+  - `services/api/interceptors/refresh.interceptor.ts` — **يُصلح خلل "+a"** + single-flight + replay.
+  - `services/api/interceptors/retry.interceptor.ts` — exponential backoff with jitter, idempotency-aware.
+  - `services/api/interceptors/error.interceptor.ts` — كل فشل → `AppError`.
+  - `services/api/apiClient.ts` — façade مكتوبة بأنواع: `api.call('saveReading', { body, idempotent: true })`.
+- ✅ **ADRs الجديدة:** 009 (no +a bug), 010 (Zod gate), 011 (Keychain/MMKV split), 012 (auto-redacting logger).
+- ✅ **Total Phase 3:** 23 ملف جديد، ~1700 سطر TS صارم.
 
 ---
 
