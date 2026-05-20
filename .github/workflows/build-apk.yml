@@ -122,6 +122,24 @@ jobs:
           echo '--- Effective gradle.properties JVM args ---'
           grep '^org.gradle.jvmargs' android/gradle.properties
 
+      # ─── 6b. Bundle JavaScript for offline use ────────────────────────────
+      # By default `assembleDebug` produces an APK that loads JS from Metro
+      # (the local dev server). For a standalone APK that works without
+      # Metro, we must pre-bundle the JS into android/app/src/main/assets/
+      # and the static assets into android/app/src/main/res/. Gradle will
+      # then package these into the APK at build time.
+      - name: Bundle JavaScript for offline use
+        run: |
+          mkdir -p android/app/src/main/assets
+          npx react-native bundle \
+            --platform android \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output android/app/src/main/assets/index.android.bundle \
+            --assets-dest android/app/src/main/res
+          echo '--- Bundled JS ---'
+          ls -lh android/app/src/main/assets/index.android.bundle
+
       - name: Assemble debug APK
         working-directory: AbbasiTahseel/android
         run: ./gradlew assembleDebug --no-daemon --stacktrace
