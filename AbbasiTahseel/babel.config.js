@@ -23,6 +23,7 @@ module.exports = {
           '@/ds': './src/design-system',
           '@/database': './src/database',
           '@/services': './src/services',
+          '@/components': './src/components',
           '@/features': './src/features',
           '@/navigation': './src/navigation',
           '@/stores': './src/stores',
