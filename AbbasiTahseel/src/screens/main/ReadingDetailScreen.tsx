@@ -51,6 +51,7 @@ import { TextField } from '@/components/forms/TextField';
 import { AppHeader } from '@/components/layout/AppHeader';
 import type { Reading } from '@/database/models/Reading';
 import { useTheme } from '@/design-system/theme';
+import { usePrinter } from '@/hooks/usePrinter';
 import {
   findByUuid,
   retryReadingPush,
@@ -184,6 +185,8 @@ export function ReadingDetailScreen(): React.JSX.Element {
   const { localUuid } = route.params;
 
   const isDevBypass = useAuthStore((s) => s.isDevBypass);
+  const authUser = useAuthStore((s) => s.user);
+  const printer = usePrinter();
 
   const [reading, setReading] = useState<Reading | null>(null);
   const [khDraft, setKhDraft] = useState<string>('');
@@ -277,6 +280,47 @@ export function ReadingDetailScreen(): React.JSX.Element {
 
     void performSave(v.value);
   }, [khDraft, performSave, reading, t]);
+
+  // ─── Print handler ───────────────────────────────────────────────────
+  const onPrintPress = useCallback((): void => {
+    if (!reading) return;
+    if (reading.kh == null) {
+      ToastAndroid.show(
+        t('readings.detail.validation.required'),
+        ToastAndroid.SHORT,
+      );
+      return;
+    }
+    if (!printer.isConnected) {
+      ToastAndroid.show(
+        t('printer.error.notConnected'),
+        ToastAndroid.LONG,
+      );
+      return;
+    }
+    void printer.printReading({
+      reading: {
+        localUuid: reading.localUuid,
+        noadad: reading.noadad,
+        customerName: reading.name,
+        customerAlias: reading.namet ?? null,
+        areaName: String(reading.nomstlm),
+        previousValue: reading.ks,
+        currentValue: reading.kh,
+        expectedConsumption: reading.asts,
+        notes: null,
+      },
+      collector: {
+        fullName: authUser?.name ?? authUser?.username ?? '',
+        employeeNumber: authUser?.id != null ? String(authUser.id) : '',
+      },
+      company: {
+        name: t('company.name'),
+        branch: t('company.branch', { number: 1 }),
+      },
+      printedAt: new Date(),
+    });
+  }, [reading, printer, authUser, t]);
 
   const onRetry = useCallback(async (): Promise<void> => {
     if (!reading) return;
@@ -414,6 +458,46 @@ export function ReadingDetailScreen(): React.JSX.Element {
               disabled={reading.isEditLocked}
             />
           </View>
+
+          {/* Print button — disabled until kh is saved AND a printer is connected. */}
+          <Pressable
+            accessibilityRole="button"
+            disabled={
+              reading.kh == null ||
+              !printer.isConnected ||
+              printer.isPrinting
+            }
+            onPress={onPrintPress}
+            style={[
+              styles.printBtn,
+              {
+                backgroundColor:
+                  reading.kh == null || !printer.isConnected
+                    ? colors.border
+                    : colors.brandSecondary,
+              },
+            ]}
+          >
+            <Feather
+              name="printer"
+              size={16}
+              color={colors.white}
+            />
+            <Text
+              style={[styles.printBtnLabel, { color: colors.white }]}
+            >
+              {printer.isPrinting
+                ? t('printer.printing')
+                : t('printer.print')}
+            </Text>
+          </Pressable>
+          {!printer.isConnected ? (
+            <Text
+              style={[styles.printHint, { color: colors.textTertiary }]}
+            >
+              {t('printer.error.notConnected')}
+            </Text>
+          ) : null}
         </Card>
 
         {/* ─── Card 3: Sync state ─────────────────────────────────── */}
@@ -625,6 +709,24 @@ const styles = StyleSheet.create({
   warningText: {
     fontSize: 12,
     fontWeight: '700',
+    textAlign: 'right',
+  },
+  printBtn: {
+    alignItems: 'center',
+    borderRadius: 12,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    marginTop: 8,
+    paddingVertical: 12,
+  },
+  printBtnLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  printHint: {
+    fontSize: 11,
+    marginTop: 6,
     textAlign: 'right',
   },
 });

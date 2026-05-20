@@ -30,7 +30,7 @@ export type MainTabsParamList = {
   Reports: undefined;
 };
 
-// ─── Main app drawer (Wave 3) ─────────────────────────────────────────────
+// ─── Main app drawer (Wave 3 + 5) ─────────────────────────────────────────
 // The Drawer mounts MainTabs as its primary route plus the secondary screens
 // reachable from the drawer menu.
 export type MainStackParamList = {
@@ -45,6 +45,17 @@ export type MainStackParamList = {
    * via `navigation.navigate('ReadingDetail', { localUuid })` from a row tap.
    */
   ReadingDetail: { localUuid: string };
+  /** Wave 5 — printer settings (paired device list + test print). */
+  PrinterSettings: undefined;
+  /** Wave 5 — company info form (logo URL, branch, footer text). */
+  CompanyInfo: undefined;
+  /**
+   * Wave 5 — barcode scanner. Reachable from the Readings FAB or from any
+   * subscriber-lookup field via `navigation.navigate('Scanner', { returnTo })`.
+   * `returnTo` tells the screen which route to bounce back into with the
+   * scanned value.
+   */
+  Scanner: { returnTo?: 'Readings' | 'NewBond' } | undefined;
 };
 
 // ─── Root switch (consumed by RootNavigator) ──────────────────────────────

@@ -21,7 +21,10 @@ import React from 'react';
 import { AboutScreen } from '@/screens/main/AboutScreen';
 import { ProfileScreen } from '@/screens/main/ProfileScreen';
 import { ReadingDetailScreen } from '@/screens/main/ReadingDetailScreen';
+import { ScannerScreen } from '@/screens/main/ScannerScreen';
 import { SettingsScreen } from '@/screens/main/SettingsScreen';
+import { CompanyInfoScreen } from '@/screens/settings/CompanyInfoScreen';
+import { PrinterSettingsScreen } from '@/screens/settings/PrinterSettingsScreen';
 import { ServerSettingsScreen } from '@/screens/settings/ServerSettingsScreen';
 
 import { DrawerContent } from './DrawerContent';
@@ -52,6 +55,20 @@ export function MainStack(): React.JSX.Element {
       <Drawer.Screen
         name="ServerSettings"
         component={ServerSettingsScreen}
+      />
+      {/* Wave 5 — printer + company + scanner (mounted in the drawer
+          navigator; PrinterSettings + CompanyInfo are listed in
+          DrawerContent's MENU_ITEMS, Scanner is reached imperatively
+          via navigation.navigate('Scanner', ...) from a FAB / lookup field). */}
+      <Drawer.Screen
+        name="PrinterSettings"
+        component={PrinterSettingsScreen}
+      />
+      <Drawer.Screen name="CompanyInfo" component={CompanyInfoScreen} />
+      <Drawer.Screen
+        name="Scanner"
+        component={ScannerScreen}
+        options={{ swipeEnabled: false }}
       />
       {/* Wave 4 — reachable via navigation.navigate('ReadingDetail', ...).
           Not listed in DrawerContent so it doesn't appear in the side menu. */}

@@ -2,19 +2,20 @@
 
 > Operational reference for the React Native rebuild of the legacy
 > `ElectricCollector28` Android field-collection app.
-> **Last updated:** Wave 3 — Main Shell + Tailscale Settings + Home Dashboard.
+> **Last updated:** Wave 5 — Printer (Datecs DPP-250 SPP) + Scanner stub + Company Info stub.
 
 ---
 
-## 1. Current State (End of Wave 4)
+## 1. Current State (End of Wave 5)
 
-- **Build status:** APK builds successfully via GitHub Actions (last Wave-2 CI: 44.71 MB).
+- **Build status:** Wave 4 APK shipped via GitHub Actions (46.93 MB); Wave 5 CI run pending the open PR.
 - **App entry flow:** Splash → License Activation (if not activated) → Login → MainStack (Drawer wrapping Tabs).
 - **Network default:** Tailscale VPN IP `100.87.131.115:3000/electric/` over HTTP (cleartext allowed globally).
-- **Active branch under work:** `feat/wave-3-main-shell`.
+- **Active branch under work:** `feat/wave-5-printer-scanner`.
 - **Persisted preferences:** hosting IP, port, useHttps, branch number, language, theme.
-- **Sync engine:** event-driven push+pull coordinator with queue + connectivity monitor (no UI in this wave beyond the badge).
-- **i18n:** Arabic-first (RTL) via `i18next` + `react-i18next`; all visible strings via `t()`.
+- **Sync engine:** event-driven push+pull coordinator with queue + connectivity monitor.
+- **Printer engine (new):** Datecs DPP-250 over Bluetooth Classic SPP; cp1256 encoder + Arabic shaper; ESC/POS builder; 3 receipt builders (reading/bond/dailySummary); Zustand `printerStore` + `usePrinter` hook + `PrinterSettingsScreen`.
+- **i18n:** Arabic-first (RTL) via `i18next` + `react-i18next`; all visible strings via `t()`. `ar.json` extended with `printer.*`, `scanner.*`, `company.*` trees.
 
 ## 2. Operational Context
 
@@ -44,6 +45,9 @@
 | Network          | axios                                    | 1.x        |
 | Storage          | @react-native-async-storage/async-storage| 1.23.x     |
 | Reactive         | rxjs (transitively via watermelondb)     | 7.x        |
+| Printer (BT/SPP) | react-native-bluetooth-classic           | 1.73.0-rc.12 |
+| Binary buffers   | buffer                                   | ~6.0.3     |
+| Camera (Wave 5.2)| react-native-vision-camera (deferred)    | 3.x        |
 
 ## 4. Wave-by-Wave History
 
@@ -63,6 +67,15 @@
   - **Section B — Mock Data:** 25 hand-crafted Arabic readings (`MOCK_READINGS`) seeded via `seedMockDataIfDevBypass()` — idempotent (sentinel UUID dedup), gated on `isDevBypass`, uses `database.batch(prepareCreate(...))`.
   - **Section C — Readings module:** repository + Zustand store + 5 building-block components (`ReadingRow`, `ReadingsSearchBar`, `ReadingsFilterChips`, `ReadingsEmptyState`, `ReadingStatBadge`) + `ReadingsScreen` (FlashList, RefreshControl, sync action) + `ReadingDetailScreen` (3 cards, kh validation, very-high confirmation modal, retry).
   - **Section C navigation:** `ReadingDetail: { localUuid }` added to `MainStackParamList`; mounted as Drawer.Screen but hidden from the drawer menu because `DrawerContent` uses a fixed `MENU_ITEMS` list (not `DrawerItemList`).
+- **Wave 5 — Printer (Datecs DPP-250 SPP) + Scanner stub + Company Info stub:**
+  - **Section A — ESC/POS core:** `src/services/printer/cp1256.ts` (Windows-1256 encoder, 226-entry Unicode map, Lam-Alef ligature U+FEFB → 2 bytes, lookup-based Arabic contextual shaper with isolated/initial/medial/final forms reversed for LTR thermal heads). `src/services/printer/escposBuilder.ts` (concatBytes + `ESC @`, `ESC t 0x16`, `ESC a n`, `ESC E n`, `GS ! n`, `GS V 1`, `GS k 73` helpers). `src/services/printer/testPage.ts` (self-test sequence).
+  - **Section B — Bluetooth transport:** `src/services/printer/PrinterManager.ts` singleton wrapping `react-native-bluetooth-classic@1.73.0-rc.12` (SPP); base64 chunked writes via `buffer@~6.0.3` (512-byte chunks); typed `connected`/`disconnected`/`error` events via TinyEmitter pattern.
+  - **Section C — Receipt builders:** `src/services/printer/receiptBuilders/{buildReadingReceipt, buildBondReceipt, buildDailySummary}.ts` + barrel. Bond builder aggregates multi-currency totals, payment-type labels, reprint banner, verification barcode `B-<num>-<hash6>`. Daily summary builder produces per-area top-8 aggregation with "remaining" line and signature block.
+  - **Section D — State + UI:** `src/stores/printerStore.ts` Zustand slice (11 actions, subscribes to PrinterManager events on module load). `src/hooks/usePrinter.ts` thin wrapper hook. `src/screens/settings/PrinterSettingsScreen.tsx` (status card, device scan list, test print, error banner). `src/screens/main/ReadingDetailScreen.tsx` gains a print button disabled when `kh == null || !isConnected || isPrinting`.
+  - **Section E — Permissions:** `AndroidManifest.xml` adds CAMERA + `camera`/`autofocus`/`bluetooth` features (required=false); `tools:targetApi="s"` + `neverForLocation` on BLUETOOTH_SCAN; `maxSdkVersion="30"` on legacy BLUETOOTH/BLUETOOTH_ADMIN.
+  - **Section F — Navigation:** `PrinterSettings`, `CompanyInfo`, `Scanner` added to `MainStackParamList`; mounted in `MainStack`; appended to `DrawerContent.MENU_ITEMS` (Feather `printer` + `briefcase`) with a live green/red status dot next to PrinterSettings driven by `usePrinterStore((s) => s.isConnected)`. Red FAB on `ReadingsScreen` navigates to `Scanner` with `{ returnTo: 'Readings' }`.
+  - **Section G — Stubs (deferred):** `CompanyInfoScreen.tsx` (form for `company_info` table → Wave 5.3 follow-up) and `ScannerScreen.tsx` (camera-off placeholder + manual-entry CTA → Wave 5.2 follow-up requiring `react-native-vision-camera@3.x`).
+  - **Section H — i18n:** `ar.json` extended with `printer.*`, `scanner.*`, `company.*`, and `navigation.drawer.{printerSettings,companyInfo,scanner}` trees.
 
 ## 5. Architecture Decision Records (ADRs)
 
@@ -80,6 +93,10 @@
 - **ADR-012 (Wave 4):** Mock data is seeded only on dev-bypass via a Zustand subscription (`useAuthStore.subscribe(state, prev) → if state.isDevBypass && !prev.isDevBypass → seed`). Idempotency is enforced by querying `Q.where('local_uuid', MOCK_READINGS[0].local_uuid)` before any insert — re-running the seeder is a no-op.
 - **ADR-013 (Wave 4):** WatermelonDB cannot express cross-column WHERE clauses (the "over-consumption" rule is `kh - ks > asts`). We apply this filter in the JS layer via an rxjs `map` operator on the observable — preserving reactivity while keeping the SQL simple. `getStats()` uses the same trick with a one-shot fetch.
 - **ADR-014 (Wave 4):** The Reading model uses a `pushStatus` TypeScript property that aliases the `sync_status` DB column. This avoids shadowing WatermelonDB's internal `Model.syncStatus` accessor (which has its own tri-state union) while keeping the DB column name unchanged for backward compatibility with the legacy server schema.
+- **ADR-015 (Wave 5):** `react-native-bluetooth-classic` (SPP) over BLE for the Datecs DPP-250 thermal printer. The legacy Java app uses RFCOMM/SPP exclusively; the Datecs DPP-250 firmware advertises the standard SPP UUID `00001101-0000-1000-8000-00805F9B34FB`; BLE would require Datecs' proprietary GATT profile (not publicly documented). Trade-off: SPP requires Bluetooth Classic pairing UX and forces `targetApi='s'`/`neverForLocation` on the SCAN permission, but reuses field operators' existing muscle memory.
+- **ADR-016 (Wave 5):** Pre-rendered Windows-1256 (cp1256) bytes with a lookup-based Arabic shaper, NOT image rendering of Arabic. The DPP-250 firmware natively supports cp1256 (selected via `ESC t 0x16`), and shaped Arabic glyphs print 10× faster than rasterized bitmaps. Lam-Alef ligature (U+FEFB) is the only 1→2 byte expansion; encoded as `0xE1 0xC7`. Text is reversed BEFORE encoding because the print head is LTR and Arabic must arrive byte-reversed to appear correct visually.
+- **ADR-017 (Wave 5):** `PrinterManager` is a module-level singleton with a TinyEmitter event bus (`connected` / `disconnected` / `error`), NOT a React context. Bluetooth state must survive screen unmounts, the print queue must serialize across stores (printerStore, ReadingDetailScreen, future BondScreen), and module singletons are how the existing sync engine is structured (ADR-005). The Zustand `printerStore` subscribes to these events on module load to mirror state into UI.
+- **ADR-018 (Wave 5):** Base64 + 512-byte chunked writes via the `buffer` package. The `react-native-bluetooth-classic@1.73.0-rc.12` JSI bridge requires base64-encoded payloads for `writeToDevice()`; writing the full receipt (~2-4 KB) in one call risks TX-buffer overflow on the printer firmware. 512 bytes is the documented safe chunk size from Datecs' SDK research notes (see `prepared-assets/printer/datecs-sdk-research.md`).
 
 ## 6. API Endpoints (`/electric/` root)
 
@@ -134,11 +151,12 @@ These are the endpoints the sync engine and screens consume. All under `http(s):
 
 ## 8. Backlog (Next Waves)
 
-- **Wave 5 — Account lookup + tariff calc + receipt preview.**
-- **Wave 6 — BondsScreen:** bond entry, partial payments, receipts printing.
-- **Wave 7 — Reports + Profile + general Settings page (theme/language).**
+- **Wave 5.2 (follow-up) — Scanner camera integration** via `react-native-vision-camera@3.x` (code scanner for QR/CODE128 to fast-locate readings/bonds).
+- **Wave 5.3 (follow-up) — CompanyInfoScreen form** (react-hook-form + zod) writing to `company_info` table; logo upload to local storage.
+- **Wave 6 — Bonds + BondPayments:** model activation, multi-currency aggregation, `NewBondScreen` / `BondDetailScreen` / `BondsScreen`, `PaymentModal`, integrate `buildBondReceipt`.
+- **Wave 7 — Reports + Profile + About + Release v1.0.0:** reports module, ProfileScreen, AboutScreen, release keystore, ProGuard rules, signed APK pipeline.
 - **Wave 8 — Recent-activity feed wired to real DB events + push notifications.**
-- **Wave 9 — Performance pass + APK signing/CI release pipeline.**
+- **Wave 9 — Performance pass + APK signing/CI release pipeline hardening.**
 
 ## 9. Warnings & Known Risks
 
@@ -181,6 +199,7 @@ cd android && ./gradlew assembleRelease
 | 2    | Wave-2   | `feat/wave-2-auth-nav`          | Success  | 44.71 MB |
 | 3    | Wave-3   | `feat/wave-3-main-shell`        | Success  | 46.87 MB |
 | 4    | Wave-4   | `feat/wave-4-readings-and-dev-bypass` | Success  | 46.93 MB |
+| 5    | Wave-5   | `feat/wave-5-printer-scanner`   | Pending  | ~50 MB est. |
 
 ## 12. Token & Secrets Hygiene
 

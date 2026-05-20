@@ -62,6 +62,7 @@ import { useSyncStore } from '@/stores/syncStore';
 
 interface NavLike {
   navigate(route: 'ReadingDetail', params: { localUuid: string }): void;
+  navigate(route: 'Scanner', params: { returnTo: 'Readings' }): void;
 }
 
 export function ReadingsScreen(): React.JSX.Element {
@@ -116,6 +117,10 @@ export function ReadingsScreen(): React.JSX.Element {
     },
     [navigation],
   );
+
+  const onScanPress = useCallback((): void => {
+    navigation.navigate('Scanner', { returnTo: 'Readings' });
+  }, [navigation]);
 
   const onSync = useCallback(async (): Promise<void> => {
     if (isDevBypass) {
@@ -196,6 +201,17 @@ export function ReadingsScreen(): React.JSX.Element {
           }
         />
       </View>
+
+      {/* Floating Action Button → Scanner */}
+      <Pressable
+        onPress={onScanPress}
+        accessibilityRole="button"
+        accessibilityLabel={t('scanner.title')}
+        android_ripple={{ color: colors.white, borderless: true }}
+        style={[styles.fab, { backgroundColor: colors.danger }]}
+      >
+        <Feather name="maximize" size={26} color={colors.white} />
+      </Pressable>
     </SafeAreaView>
   );
 }
@@ -205,6 +221,21 @@ function keyExtractor(reading: Reading): string {
 }
 
 const styles = StyleSheet.create({
+  fab: {
+    alignItems: 'center',
+    borderRadius: 28,
+    bottom: 24,
+    elevation: 6,
+    end: 20,
+    height: 56,
+    justifyContent: 'center',
+    position: 'absolute',
+    shadowColor: '#000',
+    shadowOffset: { height: 2, width: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    width: 56,
+  },
   flex: { flex: 1 },
   listWrap: { flex: 1, marginTop: 4 },
   syncBtn: {

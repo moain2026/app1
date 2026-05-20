@@ -15,3 +15,4 @@ export {
   type ReadingsState,
   type ReadingsFilterKey,
 } from './readingsStore';
+export { usePrinterStore, type PrinterState } from './printerStore';
