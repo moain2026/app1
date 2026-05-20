@@ -21,6 +21,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from './src/design-system/theme';
 import { initI18n } from './src/i18n';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { seedMockDataIfDevBypass } from './src/services/mock/seedMockData';
+import { useAuthStore } from './src/stores/authStore';
 import { useSyncStore } from './src/stores/syncStore';
 
 // Force RTL globally before anything renders.
@@ -54,8 +56,22 @@ function App(): React.JSX.Element | null {
 
     void bootstrap();
 
+    // Subscribe to auth state — every time the session flips into Dev
+    // Bypass mode, ensure the mock readings are seeded. The seeder is
+    // idempotent + gated on isDevBypass, so this is safe to call eagerly.
+    const unsubscribeAuth = useAuthStore.subscribe((state, prevState) => {
+      if (state.isDevBypass && !prevState.isDevBypass) {
+        void seedMockDataIfDevBypass();
+      }
+    });
+
+    // Also try once on cold start (covers the loadFromStorage rehydrate
+    // path where the bypass session was already active from a previous run).
+    void seedMockDataIfDevBypass();
+
     return () => {
       cancelled = true;
+      unsubscribeAuth();
       useSyncStore.getState().cleanup();
     };
   }, []);
