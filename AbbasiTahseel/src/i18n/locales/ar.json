@@ -44,7 +44,11 @@
       "networkError": "تعذر الاتصال بالخادم. تحقق من الشبكة.",
       "usernameRequired": "اسم المستخدم مطلوب",
       "passwordRequired": "كلمة المرور مطلوبة",
-      "passwordTooShort": "كلمة المرور قصيرة جداً"
+      "passwordTooShort": "كلمة المرور قصيرة جداً",
+      "testConnection": "اختبار الاتصال",
+      "testTesting": "جاري الاختبار...",
+      "testReachable": "تم الوصول إلى الخادم",
+      "testFailed": "تعذر الوصول إلى الخادم"
     },
     "pin": {
       "title": "أنشئ رمز PIN",
