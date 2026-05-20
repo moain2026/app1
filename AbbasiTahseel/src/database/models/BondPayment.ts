@@ -6,7 +6,7 @@ import { Model, type Relation } from '@nozbe/watermelondb';
 import { date, field, immutableRelation, readonly, text } from '@nozbe/watermelondb/decorators';
 
 import type { Bond } from './Bond';
-import type { SyncStatus } from './Reading';
+import type { PushStatus } from './Reading';
 
 export class BondPayment extends Model {
   static table = 'bond_payments';
@@ -25,7 +25,7 @@ export class BondPayment extends Model {
   @text('notes') notes?: string | null;
   @date('payment_date') paymentDate!: Date;
 
-  @text('sync_status') syncStatus!: SyncStatus;
+  @text('sync_status') pushStatus!: PushStatus;
   @date('last_sync_attempt_at') lastSyncAttemptAt?: Date | null;
   @text('last_error') lastError?: string | null;
   @field('sync_attempts') syncAttempts!: number;

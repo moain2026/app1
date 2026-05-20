@@ -4,7 +4,7 @@
  * All 12 WatermelonDB models for العباسي تحصيل.
  */
 
-export { Reading, type SyncStatus } from './Reading';
+export { Reading, type PushStatus } from './Reading';
 export { Bond } from './Bond';
 export { BondPayment } from './BondPayment';
 export { Account } from './Account';

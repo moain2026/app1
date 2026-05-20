@@ -13,7 +13,16 @@
 import { Model } from '@nozbe/watermelondb';
 import { date, field, readonly, text } from '@nozbe/watermelondb/decorators';
 
-export type SyncStatus =
+/**
+ * Local push lifecycle for an entity row.
+ *
+ * NOTE: This is intentionally NOT named `SyncStatus` to avoid colliding with
+ * WatermelonDB's internal `Model.syncStatus` accessor (which uses its own
+ * tri-state union: 'created' | 'updated' | 'deleted' | 'synced' | 'disposable').
+ * The DB column name stays `sync_status` to preserve the existing schema
+ * (legacy compatibility) — only the TypeScript property is renamed.
+ */
+export type PushStatus =
   | 'pristine' // server-fetched, never modified locally
   | 'dirty' // modified locally, not yet pushed
   | 'syncing' // push in flight
@@ -42,7 +51,9 @@ export class Reading extends Model {
   @field('asts') asts!: number;
 
   // ─── Sync state ───────────────────────────────────────────────────────────
-  @text('sync_status') syncStatus!: SyncStatus;
+  // Property is `pushStatus` to avoid shadowing WatermelonDB's Model.syncStatus.
+  // The underlying column name stays `sync_status` for backward DB compat.
+  @text('sync_status') pushStatus!: PushStatus;
   @date('last_sync_attempt_at') lastSyncAttemptAt?: Date | null;
   @text('last_error') lastError?: string | null;
   @field('sync_attempts') syncAttempts!: number;
