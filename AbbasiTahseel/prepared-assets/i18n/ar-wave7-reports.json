@@ -1,0 +1,171 @@
+{
+  "reports": {
+    "title": "التقارير",
+    "tabs": {
+      "daily": "يومي",
+      "weekly": "أسبوعي",
+      "monthly": "شهري",
+      "byArea": "حسب المنطقة",
+      "byCollector": "حسب المحصّل"
+    },
+    "daily": {
+      "title": "التقرير اليومي",
+      "subtitle": "{{date}}",
+      "today": "اليوم",
+      "yesterday": "أمس",
+      "datePicker": "اختر التاريخ",
+      "stats": {
+        "readings": "القراءات",
+        "bonds": "السندات",
+        "uniqueSubscribers": "المشتركون المختلفون",
+        "totalIqd": "إجمالي د.ع",
+        "totalUsd": "إجمالي $"
+      },
+      "empty": "لا يوجد نشاط في هذا التاريخ"
+    },
+    "weekly": {
+      "title": "التقرير الأسبوعي",
+      "weekLabel": "الأسبوع {{n}}",
+      "weekRange": "{{from}} → {{to}}"
+    },
+    "monthly": {
+      "title": "التقرير الشهري",
+      "year": "السنة {{year}}",
+      "month": "{{name}} {{year}}"
+    },
+    "byArea": {
+      "title": "تقرير حسب المنطقة",
+      "totalSubscribers": "إجمالي المشتركين",
+      "activeSubscribers": "المشتركون الفعّالون",
+      "readings30d": "القراءات (30 يوم)",
+      "bonds30d": "السندات (30 يوم)",
+      "amount30d": "إجمالي 30 يوم",
+      "avgConsumption": "متوسط الاستهلاك",
+      "delinquent": "المتأخرون"
+    },
+    "export": {
+      "title": "تصدير التقرير",
+      "pdf": "تصدير PDF",
+      "csv": "تصدير CSV",
+      "share": "مشاركة",
+      "print": "طباعة",
+      "generating": "جارٍ التوليد…",
+      "saved": "تم حفظ التقرير في {{path}}",
+      "failed": "فشل تصدير التقرير"
+    },
+    "chart": {
+      "barChart": "رسم بياني عمودي",
+      "lineChart": "رسم بياني خطي",
+      "pieChart": "رسم بياني دائري",
+      "noDataInRange": "لا توجد بيانات في الفترة المحددة"
+    },
+    "filters": {
+      "title": "تصفية",
+      "dateFrom": "من تاريخ",
+      "dateTo": "إلى تاريخ",
+      "area": "المنطقة",
+      "collector": "المحصّل",
+      "paymentType": "نوع الدفعة",
+      "currency": "العملة",
+      "apply": "تطبيق",
+      "reset": "إعادة تعيين"
+    }
+  },
+  "profile": {
+    "title": "ملفي الشخصي",
+    "user": {
+      "fullName": "الاسم الكامل",
+      "username": "اسم المستخدم",
+      "employeeNumber": "رقم الموظف",
+      "role": "الدور",
+      "phone": "الهاتف",
+      "branch": "الفرع"
+    },
+    "permissions": {
+      "title": "الصلاحيات",
+      "canCreateBond": "إنشاء سند قبض",
+      "canEditBond": "تعديل السند",
+      "canDeleteBond": "حذف السند",
+      "canReprint": "إعادة طباعة",
+      "canExportReport": "تصدير التقارير",
+      "canManageUsers": "إدارة المستخدمين",
+      "noPermissions": "لا توجد صلاحيات إضافية"
+    },
+    "device": {
+      "title": "بيانات الجهاز",
+      "deviceId": "معرّف الجهاز",
+      "deviceModel": "الموديل",
+      "androidVersion": "إصدار أندرويد",
+      "appVersion": "إصدار التطبيق",
+      "lastSync": "آخر مزامنة"
+    },
+    "actions": {
+      "changePassword": "تغيير كلمة المرور",
+      "logout": "تسجيل الخروج",
+      "logoutConfirmTitle": "تسجيل الخروج؟",
+      "logoutConfirmMessage": "سيتم إنهاء الجلسة. البيانات غير المتزامنة ستبقى محفوظة."
+    }
+  },
+  "about": {
+    "title": "حول التطبيق",
+    "appName": "العباسي تحصيل",
+    "version": "الإصدار",
+    "buildNumber": "رقم البناء",
+    "releaseDate": "تاريخ الإصدار",
+    "developer": "المطوّر",
+    "support": "الدعم الفني",
+    "license": "الترخيص",
+    "openSource": "المكتبات مفتوحة المصدر",
+    "privacy": "سياسة الخصوصية",
+    "terms": "شروط الاستخدام",
+    "checkUpdates": "البحث عن تحديثات",
+    "upToDate": "أنت تستخدم أحدث إصدار",
+    "updateAvailable": "يتوفر تحديث جديد: {{version}}",
+    "downloadUpdate": "تنزيل التحديث"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "sections": {
+      "general": "عام",
+      "appearance": "المظهر",
+      "network": "الشبكة",
+      "printer": "الطابعة",
+      "sync": "المزامنة",
+      "advanced": "متقدم"
+    },
+    "theme": {
+      "title": "السمة",
+      "light": "فاتح",
+      "dark": "داكن",
+      "system": "تلقائي (اتبع النظام)"
+    },
+    "language": {
+      "title": "اللغة",
+      "arabic": "العربية",
+      "english": "English",
+      "restartRequired": "يتطلب إعادة تشغيل التطبيق"
+    },
+    "fontSize": {
+      "title": "حجم الخط",
+      "small": "صغير",
+      "medium": "متوسط",
+      "large": "كبير"
+    },
+    "sync": {
+      "autoSync": "مزامنة تلقائية",
+      "syncOnlyOnWifi": "المزامنة عند الاتصال بـ Wi-Fi فقط",
+      "syncInterval": "فترة المزامنة",
+      "syncIntervalMinutes": "{{minutes}} دقيقة",
+      "manualSync": "مزامنة الآن",
+      "clearCache": "مسح الذاكرة المؤقتة"
+    },
+    "advanced": {
+      "title": "إعدادات متقدمة",
+      "debugMode": "وضع التصحيح",
+      "viewLogs": "عرض السجلات",
+      "exportLogs": "تصدير السجلات",
+      "factoryReset": "إعادة ضبط المصنع",
+      "factoryResetWarning": "سيتم حذف كل البيانات المحلية. غير قابل للتراجع."
+    }
+  }
+}

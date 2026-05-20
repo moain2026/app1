@@ -1,0 +1,111 @@
+{
+  "printer": {
+    "settings": {
+      "title": "إعدادات الطابعة",
+      "subtitle": "Datecs DPP-250 — اتصال Bluetooth",
+      "currentPrinter": "الطابعة الحالية",
+      "noPrinterConnected": "لا توجد طابعة متصلة",
+      "lastConnected": "آخر اتصال",
+      "neverConnected": "لم يسبق الاتصال"
+    },
+    "scan": {
+      "button": "بحث عن طابعات",
+      "scanning": "جارٍ البحث…",
+      "bondedDevicesTitle": "الأجهزة المقترنة",
+      "discoveredDevicesTitle": "الأجهزة المكتشفة",
+      "empty": "لم يتم العثور على طابعات. تأكد من تشغيل الطابعة وإقرانها مع الهاتف من إعدادات Bluetooth.",
+      "stop": "إيقاف البحث"
+    },
+    "connect": {
+      "button": "اتصال",
+      "connecting": "جارٍ الاتصال بـ {{name}}…",
+      "connected": "تم الاتصال بـ {{name}}",
+      "disconnect": "قطع الاتصال",
+      "reconnect": "إعادة الاتصال",
+      "failed": "فشل الاتصال",
+      "failedReason": "{{reason}} — جرّب إعادة الإقران من إعدادات Bluetooth",
+      "timeout": "انتهت مهلة الاتصال"
+    },
+    "testPrint": {
+      "button": "اختبار طباعة",
+      "running": "جارٍ إرسال صفحة الاختبار…",
+      "success": "تم إرسال صفحة الاختبار بنجاح",
+      "failed": "تعذّر طباعة صفحة الاختبار"
+    },
+    "status": {
+      "battery": "البطارية",
+      "batteryLow": "بطارية منخفضة",
+      "batteryOk": "البطارية ممتلئة",
+      "paper": "الورق",
+      "paperOk": "ورق جاهز",
+      "paperOut": "نفد الورق",
+      "coverOpen": "غطاء الطابعة مفتوح",
+      "ready": "جاهزة",
+      "busy": "مشغولة"
+    },
+    "errors": {
+      "bluetoothOff": "Bluetooth مغلق — يرجى تفعيله",
+      "permissionDenied": "صلاحية Bluetooth مرفوضة",
+      "deviceNotFound": "الجهاز غير موجود",
+      "writeFailed": "تعذّر إرسال البيانات إلى الطابعة",
+      "brokenPipe": "انقطع الاتصال بالطابعة — جرّب الاتصال من جديد",
+      "encodingFailed": "تعذّر تحويل النص إلى cp1256",
+      "unknown": "خطأ غير معروف"
+    },
+    "permission": {
+      "explanationTitle": "نحتاج إذن Bluetooth",
+      "explanationBody": "للاتصال بالطابعة المحمولة وطباعة إيصالات السندات والقراءات، يحتاج التطبيق إلى صلاحية Bluetooth. لن نستخدمها لتحديد موقعك.",
+      "grant": "السماح",
+      "deny": "لاحقاً"
+    }
+  },
+  "scanner": {
+    "title": "مسح رقم العداد",
+    "instruction": "وجّه الكاميرا نحو ملصق رقم العداد",
+    "scanning": "جارٍ المسح…",
+    "noCamera": "لا تتوفر كاميرا",
+    "permissionRequired": "صلاحية الكاميرا مطلوبة",
+    "permissionExplanation": "نستخدم الكاميرا فقط لقراءة باركود رقم العداد لتقليل الأخطاء اليدوية.",
+    "manualEntry": "إدخال يدوي بدلاً من المسح",
+    "tryAgain": "إعادة المحاولة",
+    "lastScanned": "آخر رقم تم مسحه"
+  },
+  "company": {
+    "name": "شركة العباسي لتوليد الكهرباء التجارية",
+    "shortName": "العباسي تحصيل",
+    "branch": "الفرع رقم {{number}}",
+    "supportPhone": "هاتف الدعم"
+  },
+  "print": {
+    "preview": {
+      "title": "معاينة الطباعة",
+      "preview": "معاينة",
+      "send": "إرسال إلى الطابعة",
+      "reprint": "إعادة طباعة",
+      "share": "مشاركة كصورة",
+      "exit": "إغلاق المعاينة"
+    },
+    "queue": {
+      "title": "قائمة الطباعة",
+      "empty": "لا توجد مهام طباعة معلّقة",
+      "queued": "في الانتظار",
+      "printing": "جارٍ الطباعة",
+      "done": "تمّت الطباعة",
+      "failed": "فشلت الطباعة",
+      "retry": "إعادة المحاولة",
+      "cancel": "إلغاء"
+    },
+    "settings": {
+      "mode": "نمط الإيصال",
+      "modeFull": "كامل",
+      "modeCompact": "مختصر",
+      "autoCut": "قص تلقائي",
+      "feedLines": "أسطر التغذية بعد كل إيصال",
+      "includeBarcode": "تضمين باركود التحقق",
+      "includeQR": "تضمين رمز QR",
+      "language": "لغة الطباعة",
+      "languageArabic": "عربي",
+      "languageEnglish": "إنجليزي"
+    }
+  }
+}

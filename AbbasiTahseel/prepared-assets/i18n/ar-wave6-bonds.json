@@ -1,0 +1,161 @@
+{
+  "bonds": {
+    "list": {
+      "title": "السندات",
+      "subtitle": "{{count}} سند",
+      "subtitle_one": "سند واحد",
+      "subtitle_two": "سندان",
+      "subtitle_few": "{{count}} سندات",
+      "subtitle_many": "{{count}} سند",
+      "empty": "لا توجد سندات",
+      "emptyAction": "إنشاء سند جديد",
+      "searchPlaceholder": "ابحث برقم السند، رقم العداد، أو اسم المشترك",
+      "filter": {
+        "all": "الكل",
+        "today": "اليوم",
+        "thisWeek": "هذا الأسبوع",
+        "thisMonth": "هذا الشهر",
+        "synced": "متزامن",
+        "pending": "بانتظار المزامنة",
+        "error": "خطأ في المزامنة",
+        "byArea": "حسب المنطقة",
+        "byCollector": "حسب المحصّل",
+        "reset": "إعادة تعيين الفلتر"
+      },
+      "sort": {
+        "newest": "الأحدث أولاً",
+        "oldest": "الأقدم أولاً",
+        "amountDesc": "المبلغ (تنازلي)",
+        "amountAsc": "المبلغ (تصاعدي)",
+        "bondNum": "رقم السند"
+      },
+      "card": {
+        "bondNumber": "سند #{{num}}",
+        "amount": "{{amount}} {{currency}}",
+        "syncBadgePending": "معلّق",
+        "syncBadgeError": "خطأ",
+        "subscriberLabel": "المشترك"
+      }
+    },
+    "detail": {
+      "title": "تفاصيل السند #{{num}}",
+      "section": {
+        "info": "معلومات السند",
+        "subscriber": "بيانات المشترك",
+        "payments": "الدفعات",
+        "notes": "ملاحظات",
+        "sync": "حالة المزامنة"
+      },
+      "field": {
+        "bondNumber": "رقم السند",
+        "bondDate": "تاريخ السند",
+        "bondTime": "وقت السند",
+        "collector": "المحصّل",
+        "amount": "المبلغ",
+        "totalAmount": "إجمالي المبلغ",
+        "currency": "العملة",
+        "subscriberName": "اسم المشترك",
+        "noadad": "رقم العداد",
+        "phone": "الهاتف",
+        "address": "العنوان",
+        "area": "المنطقة",
+        "previousBalance": "الرصيد السابق",
+        "newBalance": "الرصيد الجديد",
+        "notes": "الملاحظات",
+        "noNotes": "لا توجد ملاحظات",
+        "createdAt": "تاريخ الإنشاء",
+        "updatedAt": "آخر تحديث",
+        "syncStatus": "حالة المزامنة"
+      },
+      "actions": {
+        "print": "طباعة السند",
+        "reprint": "نسخة إضافية",
+        "edit": "تعديل",
+        "delete": "حذف",
+        "share": "مشاركة"
+      },
+      "confirmDelete": {
+        "title": "حذف السند؟",
+        "message": "سيتم حذف السند #{{num}} بشكل دائم. هذا الإجراء لا يمكن التراجع عنه.",
+        "confirm": "حذف",
+        "cancel": "إلغاء"
+      }
+    },
+    "new": {
+      "title": "سند قبض جديد",
+      "step": {
+        "subscriber": "اختيار المشترك",
+        "amounts": "المبالغ",
+        "review": "المراجعة"
+      },
+      "subscriber": {
+        "search": "ابحث برقم العداد أو الاسم",
+        "scan": "مسح رقم العداد",
+        "selected": "المشترك المختار",
+        "change": "تغيير",
+        "create": "إضافة مشترك جديد",
+        "notFound": "لم يتم العثور على المشترك. تحقق من رقم العداد.",
+        "balance": "الرصيد الحالي: {{amount}}"
+      },
+      "addPayment": "إضافة دفعة",
+      "removePayment": "حذف الدفعة",
+      "noPayments": "لم تتم إضافة أي دفعة بعد",
+      "totalLabel": "الإجمالي",
+      "notesPlaceholder": "ملاحظات اختيارية…",
+      "submit": "حفظ وطباعة",
+      "submitSaveOnly": "حفظ فقط",
+      "saving": "جارٍ الحفظ…",
+      "savedToast": "تم حفظ السند بنجاح",
+      "printAfterSave": "طباعة فور الحفظ"
+    },
+    "payment": {
+      "title": "تفاصيل الدفعة",
+      "types": {
+        "label": "نوع الدفعة",
+        "cash": "نقد",
+        "transfer": "حوالة",
+        "installment": "تقسيط",
+        "cheque": "شيك",
+        "mixed": "مختلطة",
+        "other": "أخرى"
+      },
+      "amount": "المبلغ",
+      "currency": "العملة",
+      "description": "الوصف (اختياري)",
+      "save": "حفظ الدفعة",
+      "cancel": "إلغاء"
+    },
+    "validation": {
+      "subscriberRequired": "يجب اختيار مشترك",
+      "atLeastOnePayment": "يجب إضافة دفعة واحدة على الأقل",
+      "amountRequired": "المبلغ مطلوب",
+      "amountPositive": "يجب أن يكون المبلغ موجباً",
+      "amountTooLarge": "المبلغ كبير جداً، يرجى المراجعة",
+      "currencyRequired": "العملة مطلوبة",
+      "noadadInvalid": "رقم العداد غير صحيح"
+    },
+    "sync": {
+      "synced": "متزامن",
+      "pending": "بانتظار المزامنة",
+      "syncing": "جارٍ المزامنة…",
+      "error": "خطأ في المزامنة",
+      "retryNow": "إعادة المحاولة الآن",
+      "lastSyncedAt": "آخر مزامنة: {{when}}",
+      "neverSynced": "لم تتم المزامنة بعد"
+    }
+  },
+  "subscribers": {
+    "search": {
+      "title": "بحث عن مشترك",
+      "placeholder": "اكتب رقم العداد أو الاسم",
+      "noResults": "لا توجد نتائج",
+      "recentSearches": "عمليات البحث السابقة"
+    },
+    "card": {
+      "noadad": "رقم العداد: {{value}}",
+      "balance": "الرصيد: {{value}}",
+      "lastReading": "آخر قراءة: {{value}}",
+      "area": "المنطقة"
+    }
+  }
+}
