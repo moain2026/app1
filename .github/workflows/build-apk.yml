@@ -40,9 +40,11 @@ jobs:
 
     # GitHub-hosted ubuntu-latest runners have ~7 GB of RAM. The project's
     # gradle.properties sets -Xmx2048m which is not enough for JetifyTransform
-    # of hermes-android-0.74.5-debug.aar (OOM observed in first CI run).
-    # Override via GRADLE_OPTS so we don't have to mutate gradle.properties
-    # — local builds keep their lower memory ceiling.
+    # of hermes-android-0.74.5-debug.aar (OOM observed in CI).
+    # Note: GRADLE_OPTS env governs the launcher JVM only — the worker JVM
+    # (where JetifyTransform actually runs) honors org.gradle.jvmargs, so we
+    # also pass -Pandroid.useAndroidX=true and -Dorg.gradle.jvmargs at the
+    # gradlew invocation below.
     env:
       GRADLE_OPTS: '-Xmx5g -XX:MaxMetaspaceSize=1g -Dorg.gradle.daemon=false'
 
@@ -109,6 +111,16 @@ jobs:
       # ─── 6. Gradle assembleDebug ──────────────────────────────────────────
       - name: Make gradlew executable
         run: chmod +x android/gradlew
+
+      # Override worker-JVM heap inside gradle.properties for CI only. The
+      # GRADLE_OPTS env above doesn't affect worker JVMs (where JetifyTransform
+      # actually runs); only org.gradle.jvmargs in gradle.properties does.
+      # We overwrite the existing 2 GB ceiling with 5 GB just for this run.
+      - name: Raise Gradle worker JVM heap for CI
+        run: |
+          sed -i 's|^org.gradle.jvmargs=.*$|org.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8|' android/gradle.properties
+          echo '--- Effective gradle.properties JVM args ---'
+          grep '^org.gradle.jvmargs' android/gradle.properties
 
       - name: Assemble debug APK
         working-directory: AbbasiTahseel/android
