@@ -32,11 +32,8 @@ export type MainTabsParamList = {
 
 // ─── Main app drawer (Wave 3) ─────────────────────────────────────────────
 // The Drawer mounts MainTabs as its primary route plus the secondary screens
-// reachable from the drawer menu. `Home` is kept as a transitional alias so
-// MainStack still compiles while Wave-3 commits land incrementally — it is
-// removed once Commit H wires the real Drawer.
+// reachable from the drawer menu.
 export type MainStackParamList = {
-  Home: undefined;
   Tabs: NavigatorScreenParams<MainTabsParamList>;
   Profile: undefined;
   Settings: undefined;
