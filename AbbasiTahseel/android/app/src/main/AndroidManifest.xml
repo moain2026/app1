@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- ─── Network ──────────────────────────────────────────────────────── -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -9,11 +10,32 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <!-- ─── Bluetooth (Wave 5 — Printer) ─────────────────────────────────── -->
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <!-- ─── Bluetooth (Wave 5 — Printer) ─────────────────────────────────────
+         BLUETOOTH + BLUETOOTH_ADMIN are legacy (pre-Android 12 / API 31) — we
+         declare them with maxSdkVersion so they aren't requested on newer
+         devices. BLUETOOTH_CONNECT + BLUETOOTH_SCAN are the modern runtime
+         permissions; we add neverForLocation to BLUETOOTH_SCAN so the system
+         knows we don't infer position from beacons. -->
+    <uses-permission android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
+
+    <!-- ─── Camera (Wave 5 — Barcode Scanner) ────────────────────────────── -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="false" />
 
     <!-- ─── Storage ──────────────────────────────────────────────────────── -->
     <uses-permission
