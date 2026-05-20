@@ -36,6 +36,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/design-system/theme';
 import { getBranchNumber } from '@/services/storage/prefs';
 import { useAuthStore } from '@/stores/authStore';
+import { usePrinterStore } from '@/stores/printerStore';
 
 import type { MainStackParamList } from './types';
 
@@ -61,6 +62,16 @@ const MENU_ITEMS: readonly MenuItemDef[] = [
     icon: 'server',
     labelKey: 'navigation.drawer.serverSettings',
   },
+  {
+    key: 'PrinterSettings',
+    icon: 'printer',
+    labelKey: 'navigation.drawer.printerSettings',
+  },
+  {
+    key: 'CompanyInfo',
+    icon: 'briefcase',
+    labelKey: 'navigation.drawer.companyInfo',
+  },
   { key: 'Settings', icon: 'settings', labelKey: 'navigation.drawer.settings' },
   { key: 'About', icon: 'info', labelKey: 'navigation.drawer.about' },
 ];
@@ -72,6 +83,7 @@ export function DrawerContent(): React.JSX.Element {
 
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const printerConnected = usePrinterStore((s) => s.isConnected);
 
   const branchNumber = getBranchNumber();
   const displayName = user?.name ?? user?.username ?? '';
@@ -136,26 +148,40 @@ export function DrawerContent(): React.JSX.Element {
 
       {/* Menu items */}
       <View style={styles.menu}>
-        {MENU_ITEMS.map((item) => (
-          <Pressable
-            key={item.key}
-            accessibilityRole="button"
-            onPress={() => handleNavigate(item.key)}
-            android_ripple={{ color: colors.surfaceElevated }}
-            style={styles.menuItem}
-          >
-            <Feather
-              name={item.icon}
-              size={20}
-              color={colors.textSecondary}
-            />
-            <Text
-              style={[styles.menuLabel, { color: colors.textPrimary }]}
+        {MENU_ITEMS.map((item) => {
+          const showStatusDot = item.key === 'PrinterSettings';
+          const dotColor = printerConnected ? colors.success : colors.danger;
+          return (
+            <Pressable
+              key={item.key}
+              accessibilityRole="button"
+              onPress={() => handleNavigate(item.key)}
+              android_ripple={{ color: colors.surfaceElevated }}
+              style={styles.menuItem}
             >
-              {t(item.labelKey)}
-            </Text>
-          </Pressable>
-        ))}
+              <Feather
+                name={item.icon}
+                size={20}
+                color={colors.textSecondary}
+              />
+              <Text
+                style={[styles.menuLabel, { color: colors.textPrimary }]}
+              >
+                {t(item.labelKey)}
+              </Text>
+              {showStatusDot ? (
+                <View
+                  style={[styles.statusDot, { backgroundColor: dotColor }]}
+                  accessibilityLabel={
+                    printerConnected
+                      ? t('printer.settings.currentPrinter')
+                      : t('printer.settings.noPrinterConnected')
+                  }
+                />
+              ) : null}
+            </Pressable>
+          );
+        })}
       </View>
 
       <View
@@ -223,6 +249,12 @@ const styles = StyleSheet.create({
   menuLabel: {
     fontSize: 15,
     fontWeight: '600',
+  },
+  statusDot: {
+    borderRadius: 5,
+    height: 10,
+    marginStart: 'auto',
+    width: 10,
   },
   version: {
     fontSize: 12,
