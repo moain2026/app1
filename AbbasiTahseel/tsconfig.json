@@ -44,7 +44,7 @@
     "jsx": "react-native",
     "target": "esnext",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "isolatedModules": true,
     "allowJs": false,
     "noEmit": true
