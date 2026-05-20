@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Current State (End of Wave 3)
+## 1. Current State (End of Wave 4)
 
 - **Build status:** APK builds successfully via GitHub Actions (last Wave-2 CI: 44.71 MB).
 - **App entry flow:** Splash → License Activation (if not activated) → Login → MainStack (Drawer wrapping Tabs).
@@ -50,13 +50,19 @@
 - **Wave 0 — Bootstrap:** RN 0.74.5 bare project, Android target SDK, Arabic RTL by default, brand theme tokens.
 - **Wave 1 — Foundations:** design-system theme, prefs storage, HTTP client base, network_security_config (cleartext for Tailscale CIDR), license manager scaffold.
 - **Wave 2 — Auth + License + Navigation:** authStore + licenseStore (Zustand); RootNavigator switching between Splash/Auth/License/Main; AuthStack with LoginScreen + LicenseActivationScreen; hotfix to unblock Metro bundle (alias precedence + `@babel/plugin-transform-export-namespace-from`).
-- **Wave 3 — Main Shell + Tailscale Settings + Home Dashboard (this wave):**
+- **Wave 3 — Main Shell + Tailscale Settings + Home Dashboard:**
   - Default IP switched to Tailscale (`100.87.131.115`) + `BRANCH_NUMBER` pref.
   - ServerSettingsScreen reachable from both Login (pre-auth gear icon) and Drawer.
   - MainStack rewritten as right-side Drawer wrapping a 4-tab BottomTab navigator.
   - SyncStatusBadge live-bound to `syncStore` (online/syncing/error/offline) with detail modal.
   - HomeScreen rebuilt with welcome card, 2x2 KPI grid backed by WatermelonDB `observeCount()`, CTA, RefreshControl, and recent-activity stub.
   - Vector-icon fonts wired in `android/app/build.gradle` via `fonts.gradle`.
+- **Wave 4 — Readings Module + Dev Bypass Mode (this wave):**
+  - **Section A — Dev Bypass:** `dev`/`0000` shortcut short-circuits `authStore.login()` BEFORE any network call, mints a local admin session with sentinel tokens (`dev.bypass.token.local.only`), persists them via Keychain, and surfaces a yellow Home banner + dashed Dev Mode card on the Login screen.
+  - **Section A bugfix:** the LoginScreen `secureId` preview was stale because its `useEffect` had no dependency on focus events. Replaced with `useFocusEffect` so the override is re-resolved every time the user returns from ServerSettings.
+  - **Section B — Mock Data:** 25 hand-crafted Arabic readings (`MOCK_READINGS`) seeded via `seedMockDataIfDevBypass()` — idempotent (sentinel UUID dedup), gated on `isDevBypass`, uses `database.batch(prepareCreate(...))`.
+  - **Section C — Readings module:** repository + Zustand store + 5 building-block components (`ReadingRow`, `ReadingsSearchBar`, `ReadingsFilterChips`, `ReadingsEmptyState`, `ReadingStatBadge`) + `ReadingsScreen` (FlashList, RefreshControl, sync action) + `ReadingDetailScreen` (3 cards, kh validation, very-high confirmation modal, retry).
+  - **Section C navigation:** `ReadingDetail: { localUuid }` added to `MainStackParamList`; mounted as Drawer.Screen but hidden from the drawer menu because `DrawerContent` uses a fixed `MENU_ITEMS` list (not `DrawerItemList`).
 
 ## 5. Architecture Decision Records (ADRs)
 
@@ -70,6 +76,10 @@
 - **ADR-008:** Feather as the single icon family across the app for visual consistency.
 - **ADR-009:** Use `@/design-system/theme` import alias (the `@/ds/...` alias has resolver ambiguity in tsc).
 - **ADR-010:** ServerSettingsScreen mounted in **both** AuthStack and MainStack so it is reachable before login (Tailscale/IP setup) and after (drawer).
+- **ADR-011 (Wave 4):** Dev Bypass short-circuits inside `authStore.login()` BEFORE any HTTP attempt. Sentinel tokens (`dev.bypass.token.local.only`) are persisted via Keychain so cold-start rehydrate sees them in `loadFromStorage()` and restores the bypass session without a network round-trip. This is the ONLY auth path that bypasses the legacy server.
+- **ADR-012 (Wave 4):** Mock data is seeded only on dev-bypass via a Zustand subscription (`useAuthStore.subscribe(state, prev) → if state.isDevBypass && !prev.isDevBypass → seed`). Idempotency is enforced by querying `Q.where('local_uuid', MOCK_READINGS[0].local_uuid)` before any insert — re-running the seeder is a no-op.
+- **ADR-013 (Wave 4):** WatermelonDB cannot express cross-column WHERE clauses (the "over-consumption" rule is `kh - ks > asts`). We apply this filter in the JS layer via an rxjs `map` operator on the observable — preserving reactivity while keeping the SQL simple. `getStats()` uses the same trick with a one-shot fetch.
+- **ADR-014 (Wave 4):** The Reading model uses a `pushStatus` TypeScript property that aliases the `sync_status` DB column. This avoids shadowing WatermelonDB's internal `Model.syncStatus` accessor (which has its own tri-state union) while keeping the DB column name unchanged for backward compatibility with the legacy server schema.
 
 ## 6. API Endpoints (`/electric/` root)
 
@@ -124,7 +134,6 @@ These are the endpoints the sync engine and screens consume. All under `http(s):
 
 ## 8. Backlog (Next Waves)
 
-- **Wave 4 — ReadingsScreen:** list + new-reading form + camera capture + offline queue UI.
 - **Wave 5 — Account lookup + tariff calc + receipt preview.**
 - **Wave 6 — BondsScreen:** bond entry, partial payments, receipts printing.
 - **Wave 7 — Reports + Profile + general Settings page (theme/language).**
@@ -170,7 +179,8 @@ cd android && ./gradlew assembleRelease
 |------|----------|---------------------------------|----------|----------|
 | 1    | Pre-set  | `main`                          | Success  | ~40 MB   |
 | 2    | Wave-2   | `feat/wave-2-auth-nav`          | Success  | 44.71 MB |
-| 3    | Wave-3   | `feat/wave-3-main-shell`        | Pending  | —        |
+| 3    | Wave-3   | `feat/wave-3-main-shell`        | Success  | 46.87 MB |
+| 4    | Wave-4   | `feat/wave-4-readings-and-dev-bypass` | Pending  | —        |
 
 ## 12. Token & Secrets Hygiene
 
