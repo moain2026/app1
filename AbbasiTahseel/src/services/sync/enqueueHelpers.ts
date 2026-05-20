@@ -39,7 +39,7 @@ const log = logger.scope('EnqueueHelpers');
  * Enqueue a reading save (create or update).
  *
  * Side-effects:
- *   • Marks the target Reading row as `syncStatus = 'dirty'`.
+ *   • Marks the target Reading row as `pushStatus = 'dirty'`.
  *   • Builds the wire payload via `readingToDto` to guarantee legacy field
  *     names (noadad, ks, kh, …).
  *   • Fire-and-forget `pushOnly('after_write')` to attempt an immediate upload.
@@ -58,7 +58,7 @@ export async function enqueueReadingSave(
 
   await database.write(async () => {
     await reading.update(row => {
-      row.syncStatus = 'dirty';
+      row.pushStatus = 'dirty';
       row.lastError = null;
     });
   });
@@ -111,7 +111,7 @@ export async function enqueueReadingDelete(
 
   await database.write(async () => {
     await reading.update(row => {
-      row.syncStatus = 'dirty';
+      row.pushStatus = 'dirty';
     });
   });
 
@@ -153,7 +153,7 @@ export async function enqueueBondSave(
 
   await database.write(async () => {
     await bond.update(row => {
-      row.syncStatus = 'dirty';
+      row.pushStatus = 'dirty';
     });
   });
 
@@ -191,7 +191,7 @@ export async function enqueueBondPaymentSave(
 
   await database.write(async () => {
     await payment.update(row => {
-      row.syncStatus = 'dirty';
+      row.pushStatus = 'dirty';
     });
   });
 
