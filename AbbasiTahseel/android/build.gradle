@@ -36,4 +36,16 @@ allprojects {
             force "androidx.core:core-ktx:1.13.1"
         }
     }
+
+    // ─── react-native-background-fetch bundled tsbackgroundfetch AAR ──────────
+    // v4.2.5+ ships com.transistorsoft:tsbackgroundfetch as a local Maven repo
+    // under node_modules/react-native-background-fetch/android/libs. Declaring
+    // it here at the root ensures Gradle can resolve it from any subproject
+    // (the library's own per-project repositories block is unreliable under
+    // some Gradle configurations).
+    repositories {
+        maven {
+            url("${rootDir}/../node_modules/react-native-background-fetch/android/libs")
+        }
+    }
 }

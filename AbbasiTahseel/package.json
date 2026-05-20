@@ -57,7 +57,7 @@
     "react-native-vision-camera": "~4.5.2",
     "vision-camera-code-scanner": "~0.2.0",
 
-    "react-native-background-fetch": "~4.2.5",
+    "react-native-background-fetch": "4.2.5",
     "@react-native-community/netinfo": "~11.3.2",
 
     "react-hook-form": "^7.52.2",
