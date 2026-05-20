@@ -21,6 +21,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from './src/design-system/theme';
 import { initI18n } from './src/i18n';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { useSyncStore } from './src/stores/syncStore';
 
 // Force RTL globally before anything renders.
 if (!I18nManager.isRTL) {
@@ -33,17 +34,29 @@ function App(): React.JSX.Element | null {
 
   useEffect(() => {
     let cancelled = false;
-    initI18n()
-      .catch(() => {
-        // i18n bootstrap is best-effort; fall back to bundled defaults.
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setI18nReady(true);
-        }
-      });
+
+    const bootstrap = async (): Promise<void> => {
+      try {
+        await initI18n();
+      } catch {
+        // i18n is best-effort; bundled fallback covers us.
+      }
+      try {
+        await useSyncStore.getState().init();
+      } catch {
+        // Sync init failure must not block the UI — the badge will just
+        // show 'offline' until the user retries from the detail sheet.
+      }
+      if (!cancelled) {
+        setI18nReady(true);
+      }
+    };
+
+    void bootstrap();
+
     return () => {
       cancelled = true;
+      useSyncStore.getState().cleanup();
     };
   }, []);
 

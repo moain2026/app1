@@ -20,12 +20,14 @@ import { useTranslation } from 'react-i18next';
 import {
   Image,
   Keyboard,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Feather from 'react-native-vector-icons/Feather';
 import { z } from 'zod';
 
 import { PasswordField, PrimaryButton, TextField } from '@/components/forms';
@@ -98,6 +100,20 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
       style={[styles.flex, { backgroundColor: colors.background }]}
       edges={['top', 'bottom']}
     >
+      {/* Top-right gear: opens ServerSettings. Sits OUTSIDE the ScrollView
+          so it stays anchored even when the form pushes content up. */}
+      <View style={styles.topBar}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.server.title')}
+          onPress={() => navigation.navigate('ServerSettings')}
+          style={styles.gearButton}
+          hitSlop={8}
+        >
+          <Feather name="settings" size={22} color={colors.textSecondary} />
+        </Pressable>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
@@ -199,6 +215,12 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   flex: { flex: 1 },
+  gearButton: {
+    alignItems: 'center',
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
   forgot: {
     fontSize: 12,
     marginTop: 12,
@@ -227,5 +249,10 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
     textAlign: 'center',
+  },
+  topBar: {
+    alignItems: 'flex-end',
+    paddingHorizontal: 8,
+    paddingTop: 4,
   },
 });

@@ -39,6 +39,7 @@ export const PREF_KEYS = {
   PORT: 'net.port',
   USE_HTTPS: 'net.use_https',
   APP_ID: 'net.app_id',
+  BRANCH_NUMBER: 'net.branch_number',
 
   // UI
   THEME: 'ui.theme',
@@ -64,10 +65,20 @@ export const PREF_KEYS = {
 
 export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];
 
-// ─── Defaults (legacy app shipped with hardcoded 192.168.0.100:3000) ──────
-export const DEFAULT_HOSTING_IP = '192.168.0.100';
+// ─── Defaults ─────────────────────────────────────────────────────────────
+//
+// HOSTING_IP default points at the user's Tailscale VPN IP for the backend
+// server. The legacy Java app shipped with the LAN IP 192.168.0.100 — for
+// the React Native rebuild the operator reaches the server over Tailscale,
+// so the default is moved to 100.87.131.115.
+//
+// IMPORTANT: this default is meant for the current single-deployment user.
+// If you are forking this app for a wider rollout, override the default in
+// ServerSettings or here BEFORE shipping. See PROJECT_PLAYBOOK.md §10.
+export const DEFAULT_HOSTING_IP = '100.87.131.115';
 export const DEFAULT_PORT = '3000';
 export const DEFAULT_USE_HTTPS = false;
+export const DEFAULT_BRANCH_NUMBER = '1';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Network preferences
@@ -103,6 +114,22 @@ export function getAppId(): string | null {
 
 export function setAppId(id: string): void {
   storage.set(PREF_KEYS.APP_ID, id);
+}
+
+/**
+ * رقم الفرع — Branch number.
+ *
+ * The legacy app appends this to outbound payloads so the backend can
+ * partition data by branch. We store it as a string (the legacy server
+ * accepts both numeric and string representations) and default to '1'
+ * for single-branch deployments.
+ */
+export function getBranchNumber(): string {
+  return storage.getString(PREF_KEYS.BRANCH_NUMBER) ?? DEFAULT_BRANCH_NUMBER;
+}
+
+export function setBranchNumber(value: string): void {
+  storage.set(PREF_KEYS.BRANCH_NUMBER, value);
 }
 
 /**

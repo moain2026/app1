@@ -1,28 +1,57 @@
 /**
- * MainStack — post-auth navigation tree (Wave 2 placeholder)
+ * MainStack — post-auth Drawer navigator (Wave 3)
  *
- * Currently hosts a single Home screen. Wave 3 will expand this into a
- * tab navigator (Readings, Bonds, Reports, Profile) wrapped in a Drawer.
+ * Right-side drawer (RTL) that hosts:
+ *   - Tabs            -> MainTabs (Home / Readings / Bonds / Reports)
+ *   - Profile         -> placeholder (Wave 7)
+ *   - Settings        -> placeholder (Wave 7)
+ *   - About           -> placeholder (Wave 7)
+ *   - ServerSettings  -> connection settings (reusable from Auth too)
+ *
+ * Configuration:
+ *   - drawerPosition: 'right'   (visual right under RTL — swipe from edge)
+ *   - drawerType:     'front'   (overlay; doesn't push content)
+ *   - swipeEnabled:   true
+ *   - headerShown:    false     (every screen mounts its own AppHeader)
  */
 
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import React from 'react';
 
-import { HomeScreen } from '@/screens/main/HomeScreen';
+import { AboutScreen } from '@/screens/main/AboutScreen';
+import { ProfileScreen } from '@/screens/main/ProfileScreen';
+import { SettingsScreen } from '@/screens/main/SettingsScreen';
+import { ServerSettingsScreen } from '@/screens/settings/ServerSettingsScreen';
 
+import { DrawerContent } from './DrawerContent';
+import { MainTabs } from './MainTabs';
 import type { MainStackParamList } from './types';
 
-const Stack = createNativeStackNavigator<MainStackParamList>();
+const Drawer = createDrawerNavigator<MainStackParamList>();
 
 export function MainStack(): React.JSX.Element {
   return (
-    <Stack.Navigator
-      initialRouteName="Home"
+    <Drawer.Navigator
+      initialRouteName="Tabs"
+      drawerContent={() => <DrawerContent />}
       screenOptions={{
         headerShown: false,
+        drawerPosition: 'right',
+        drawerType: 'front',
+        swipeEnabled: true,
+        drawerStyle: {
+          width: 280,
+        },
       }}
     >
-      <Stack.Screen name="Home" component={HomeScreen} />
-    </Stack.Navigator>
+      <Drawer.Screen name="Tabs" component={MainTabs} />
+      <Drawer.Screen name="Profile" component={ProfileScreen} />
+      <Drawer.Screen name="Settings" component={SettingsScreen} />
+      <Drawer.Screen name="About" component={AboutScreen} />
+      <Drawer.Screen
+        name="ServerSettings"
+        component={ServerSettingsScreen}
+      />
+    </Drawer.Navigator>
   );
 }

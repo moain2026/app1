@@ -19,11 +19,26 @@ export type AuthStackParamList = {
   LicenseActivation: undefined;
   Login: undefined;
   PinSetup: undefined;
+  ServerSettings: undefined;
 };
 
-// ─── Main app (Wave 3+) ───────────────────────────────────────────────────
-export type MainStackParamList = {
+// ─── Main app bottom tabs (Wave 3) ────────────────────────────────────────
+export type MainTabsParamList = {
   Home: undefined;
+  Readings: undefined;
+  Bonds: undefined;
+  Reports: undefined;
+};
+
+// ─── Main app drawer (Wave 3) ─────────────────────────────────────────────
+// The Drawer mounts MainTabs as its primary route plus the secondary screens
+// reachable from the drawer menu.
+export type MainStackParamList = {
+  Tabs: NavigatorScreenParams<MainTabsParamList>;
+  Profile: undefined;
+  Settings: undefined;
+  About: undefined;
+  ServerSettings: undefined;
 };
 
 // ─── Root switch (consumed by RootNavigator) ──────────────────────────────

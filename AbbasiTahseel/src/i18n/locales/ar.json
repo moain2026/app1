@@ -66,5 +66,92 @@
     "minLength": "يجب أن لا يقل عن {{count}} حرف",
     "maxLength": "يجب أن لا يزيد عن {{count}} حرف",
     "email": "بريد إلكتروني غير صحيح"
+  },
+  "settings": {
+    "server": {
+      "title": "إعدادات الاتصال",
+      "serverAddress": "عنوان السيرفر",
+      "serverAddressPlaceholder": "100.87.131.115",
+      "port": "البورت",
+      "portPlaceholder": "3000",
+      "branch": "رقم الفرع",
+      "branchPlaceholder": "1",
+      "serialNumber": "الرقم التسلسلي للجهاز",
+      "useHttps": "استخدام HTTPS",
+      "save": "حفظ",
+      "cancel": "تراجع",
+      "saved": "تم الحفظ بنجاح",
+      "invalidIp": "عنوان IP غير صحيح",
+      "invalidPort": "البورت يجب أن يكون بين 1 و 65535",
+      "invalidBranch": "رقم الفرع يجب أن يكون رقماً موجباً"
+    }
+  },
+  "navigation": {
+    "tabs": {
+      "home": "الرئيسية",
+      "readings": "القراءات",
+      "bonds": "السندات",
+      "reports": "التقارير"
+    },
+    "drawer": {
+      "profile": "الملف الشخصي",
+      "serverSettings": "إعدادات الاتصال",
+      "settings": "الإعدادات",
+      "about": "حول التطبيق",
+      "logout": "تسجيل الخروج",
+      "logoutConfirm": "هل أنت متأكد من تسجيل الخروج؟",
+      "logoutYes": "تسجيل خروج",
+      "logoutNo": "إلغاء",
+      "version": "الإصدار {{version}}"
+    }
+  },
+  "home": {
+    "welcome": "مرحباً، {{name}}",
+    "branch": "الفرع رقم {{branch}}",
+    "kpi": {
+      "todayReadings": "قراءات اليوم",
+      "todayBonds": "سندات اليوم",
+      "pending": "في الانتظار",
+      "lastSync": "آخر مزامنة",
+      "neverSynced": "لم تتم",
+      "now": "الآن",
+      "minutesAgo": "منذ {{count}} دقيقة",
+      "hoursAgo": "منذ {{count}} ساعة",
+      "daysAgo": "منذ {{count}} يوم"
+    },
+    "startTour": "ابدأ جولة قراءات",
+    "recentActivity": "آخر العمليات",
+    "noActivity": "لا توجد عمليات حديثة",
+    "pullToRefresh": "اسحب للتحديث"
+  },
+  "sync": {
+    "status": {
+      "online": "متصل",
+      "syncing": "جاري المزامنة",
+      "error": "خطأ في المزامنة",
+      "offline": "غير متصل"
+    },
+    "actions": {
+      "syncNow": "مزامنة الآن",
+      "viewDetails": "عرض التفاصيل",
+      "close": "إغلاق"
+    },
+    "info": {
+      "title": "حالة المزامنة",
+      "pendingCount": "{{count}} عملية معلّقة",
+      "failedCount": "{{count}} عملية فاشلة",
+      "lastSync": "آخر مزامنة: {{time}}",
+      "noPending": "لا توجد عمليات معلّقة",
+      "noFailed": "لا توجد عمليات فاشلة",
+      "neverSynced": "لم تتم المزامنة بعد"
+    }
+  },
+  "comingSoon": {
+    "readings": "قائمة القراءات\n(الموجة 4)",
+    "bonds": "السندات والمدفوعات\n(الموجة 6)",
+    "reports": "التقارير\n(الموجة 7)",
+    "profile": "الملف الشخصي\n(الموجة 7)",
+    "settings": "الإعدادات العامة\n(الموجة 7)",
+    "about": "حول التطبيق\n(الموجة 7)"
   }
 }
