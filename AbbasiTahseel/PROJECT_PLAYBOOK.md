@@ -389,11 +389,20 @@ GET    /electric/report1                  → ReportRow[]
 - [x] Error interceptor — converts every failure to typed `AppError`.
 - [x] Typed API façade (`apiClient.ts`) — `api.call('saveReading', { body, idempotent: true })`.
 
-### Phase 4 — Sync Engine (Days 10-12)
-- [ ] SyncQueue manager.
-- [ ] SyncWorker مع exponential backoff.
-- [ ] Background fetch setup.
-- [ ] Idempotency keys + conflict resolution.
+### Phase 4 — Sync Engine (Days 10-12) ✅ COMPLETE
+- [x] **SyncQueue manager** — enqueue/dedupe/claim/markDone/markPending/markFailed + prune + recoverStuck.
+- [x] **SyncWorker مع exponential backoff** — 2s→4s→8s→…→5min cap + jitter, maxAttempts=6.
+- [x] **Background fetch setup** — react-native-background-fetch, 15-min Android floor, pushOnly during wake.
+- [x] **Idempotency keys + conflict resolution** — `entity_local_uuid` keys, LWW (collector wins) for readings/bonds.
+- [x] **Push handlers** — readingPushHandler (Save/Update/Delete) + bondPushHandler + bondPaymentPushHandler.
+- [x] **Pull handlers** — readings (LWW-aware) + 8 reference entities (accounts, places, groups/tblh, currencies, users, company, bonds, bond_payments).
+- [x] **Error classifier** — transient (network/5xx/429/401) vs. permanent (4xx/Zod/business) routing.
+- [x] **Connectivity monitor** — NetInfo wrapper, auto-pushOnly on reconnect.
+- [x] **SyncCoordinator** — orchestrates push→pull, online+auth preconditions, sequential pulls, per-entity error isolation.
+- [x] **Sync events bus** — pub/sub for Dashboard (Phase 11) with ring-buffer history.
+- [x] **Enqueue helpers** — feature-layer entry points: `enqueueReadingSave`, `enqueueBondSave`, `enqueueBondPaymentSave`, `reenqueueAllDirtyReadings`.
+- [x] **Entity sync status** — bidirectional state propagation (queue ↔ entity row's `sync_status`).
+- [x] **sync_logs audit trail** — append-only persisted history for Dashboard.
 
 ### Phase 5 — Auth Flow (Days 13-14)
 - [ ] Splash screen مع شعار العباسي.
@@ -461,7 +470,8 @@ GET    /electric/report1                  → ReportRow[]
 | **Phase 1 — Design System Tokens** | 🟡 In Progress | الـ tokens ✅ — يبقى components. |
 | **Phase 2 — Database Schema + Models** | 🟡 In Progress | Schema + Models ✅ — يبقى Repositories. |
 | **Phase 3 — Network Layer** | ✅ Complete | Storage + Logger + Errors + Zod + Mappers + Endpoints + 4 Interceptors + Typed Client. The legacy `+a` refresh-token bug is fixed. |
-| Phase 4 — Sync Engine | ⏳ Next | |
+| **Phase 4 — Sync Engine** | ✅ Complete | Queue manager + Worker with exponential backoff + Push/Pull handlers + LWW conflict resolution + NetInfo + Background fetch + Events bus + Sync logs. 22 ملف، 3466 سطر. |
+| Phase 5 — Auth Flow | ⏳ Next | |
 | Phases 5-13 | ⏳ Pending | |
 
 ---
@@ -519,6 +529,27 @@ GET    /electric/report1                  → ReportRow[]
 ### ADR-012: Logger مع Auto-Redaction
 - **القرار:** لا يوجد `console.log` مباشر في الكود. كل ما يُسجَّل يمر عبر `utils/logger.ts` الذي يكتشف المفاتيح الحساسة (`token`, `password`, `secret`, `authorization`, `pin`, `secureId`) ويستبدل قيمها بـ `<N chars: abcd…>`.
 - **النتيجة:** آمن للتشغيل في الإنتاج، لا تسريب صدفي لتوكن في الـ logs أو في Sentry لاحقاً.
+
+### ADR-013: Conflict Resolution — Local Wins (LWW with collector authority)
+- **القرار:** عند سحب البيانات من السيرفر، **لا يتم استبدال** أي صف محلي حالته في `{ dirty, syncing, failed }`. الجابي هو "صاحب الحقيقة" لأي صف لمسه منذ آخر مزامنة ناجحة. السيرفر يكتب فقط على صفوف `pristine` أو `synced`.
+- **السياق:** الجابي يعمل في الميدان لساعات بدون اتصال؛ بياناته المحلية هي العمل الفعلي ولا يمكن خسارتها بسبب سحب عَرَضي.
+- **النتيجة:** عدم فقدان قراءات أو سندات بسبب pull غير متزامن. صفر مفاجآت للمستخدم.
+
+### ADR-014: Push قبل Pull (Push-First Ordering)
+- **القرار:** `syncCoordinator.syncNow()` ينفّذ `drainQueueOnce()` **قبل** أي `pullHandler.run()`.
+- **السبب:** لو سحبنا أولاً، فقاعدة LWW ستخطّي الصفوف الـ dirty ولن يحدث تحديث، فيظهر للمستخدم بيانات قديمة على شاشة. بالـ push أولاً، نحوّل dirty→synced، ثم نسحب بنظافة.
+- **النتيجة:** لوحة المزامنة (Phase 11) ستعكس الحالة الصحيحة دائماً.
+
+### ADR-015: Background Push بدون Pull
+- **القرار:** عند استيقاظ التطبيق من `react-native-background-fetch`، نُنفّذ `pushOnly` فقط (لا pull).
+- **السبب 1:** نافذة الـ OS = 30 ثانية. سحب 9 endpoints قد يتجاوزها → throttling.
+- **السبب 2:** السحب يستهلك بيانات الجوال للجابي (الذي يدفع من جيبه). نُؤجّل السحب للـ foreground حيث يكون التطبيق مفتوح بقرار المستخدم.
+- **النتيجة:** المزامنة الخلفية = خفيفة + سريعة + موفّرة لتكاليف الـ data للجابي.
+
+### ADR-016: Dedup داخل طابور المزامنة
+- **القرار:** عند `enqueue` لصف موجود فعلاً بحالة `pending` أو `processing` لنفس `(entityType + entityLocalUuid)`، نُحدِّث الـ payload الحالي **بدلاً من** إنشاء صف جديد. الصفوف المكرَّرة الأخرى تُحذف داخل نفس الترانزاكشن.
+- **السبب:** الجابي يضغط Save 5 مرات سريعاً قبل المزامنة → ينتج 5 صفوف queue → 5 استدعاءات للسيرفر → ازدحام. الـ dedup يضمن استدعاء واحد بالـ snapshot الأخير.
+- **النتيجة:** الطابور يبقى صغيراً، السيرفر يستلم آخر نسخة فقط، وعداد المحاولات (`attempts`) يستمر من حيث توقف (لا reset).
 
 ---
 
@@ -600,6 +631,43 @@ GET    /electric/report1                  → ReportRow[]
   - `services/api/apiClient.ts` — façade مكتوبة بأنواع: `api.call('saveReading', { body, idempotent: true })`.
 - ✅ **ADRs الجديدة:** 009 (no +a bug), 010 (Zod gate), 011 (Keychain/MMKV split), 012 (auto-redacting logger).
 - ✅ **Total Phase 3:** 23 ملف جديد، ~1700 سطر TS صارم.
+
+### v1.2.0 — 2026-05-20 — Phase 4 (Sync Engine)
+- ✅ **Queue Management:**
+  - `services/sync/syncQueue.ts` — enqueue (مع dedup ذكي عبر `entity_local_uuid`)، claimBatch (transactional)، markDone/Pending/Failed، pruneDoneOlderThan، recoverStuckProcessing، getStats.
+  - `services/sync/entitySyncStatus.ts` — تنقّل حالة الصفوف الهدف (`Reading`/`Bond`/`BondPayment.sync_status`) بشكل متزامن مع الطابور.
+- ✅ **Worker:**
+  - `services/sync/syncWorker.ts` — `drainQueueOnce()` مع process-wide mutex، يعالج الدُفعات بشكل تسلسلي، يحوّل النتائج إلى DB transitions.
+  - `services/sync/backoff.ts` — Exponential delay مع jitter: `delay = min(2^attempt × 2s, 5min) + random(0..1s)`.
+  - `services/sync/errorClassifier.ts` — يُصنّف الفشل إلى transient (network/5xx/429/401) أو permanent (4xx/Zod/business).
+- ✅ **Push Handlers (Outbound):**
+  - `services/sync/push/readingPushHandler.ts` — يستدعي `SaveReading`/`UpdateReading`/`DeleteReading` مع `idempotent: true` ويُمرّر `local_uuid` كمفتاح idempotency.
+  - `services/sync/push/bondPushHandler.ts` — معالج محايد للسندات (السيرفر القديم لا يدعمها بعد؛ يُعطي permanent failure حتى يضيفها فريق الباك إند).
+  - `services/sync/push/index.ts` — registry يربط `SyncEntityType → PushHandler`.
+- ✅ **Pull Handlers (Inbound):**
+  - `services/sync/pull/readingPullHandler.ts` — يسحب القراءات + يطبّق LWW (يخطّي dirty/syncing/failed).
+  - `services/sync/pull/referencePullHandlers.ts` — 8 معالجات (accounts، places، groups+tblh، currencies، users، company، bonds، bond_payments). البيانات المرجعية تُستبدل بالكامل (full-replace)، السندات تحترم LWW.
+  - `services/sync/pull/index.ts` — registry مرتّب (مرجعية أولاً، ثم بيانات الجابي).
+- ✅ **Connectivity:**
+  - `services/sync/connectivity.ts` — wrapper لـ NetInfo، يُبثّ `connectivity:online`/`offline` على ناقل الأحداث، يُمكّن auto-push عند عودة الاتصال.
+- ✅ **Background Fetch:**
+  - `services/sync/backgroundFetch.ts` — تكامل `react-native-background-fetch` (Android floor: 15min). يستيقظ → `pushOnly('background_fetch')` → `BackgroundFetch.finish(taskId)` خلال 30 ثانية.
+- ✅ **Coordinator (الواجهة العامة):**
+  - `services/sync/syncCoordinator.ts` — `syncNow(trigger)` / `pushOnly` / `pullEntities`، يفحص online + auth قبل التشغيل، Push-first ordering، per-entity error isolation للـ pulls.
+  - `services/sync/syncBootstrap.ts` — `initSyncEngine({ syncOnStartup, syncOnReconnect, enableBackgroundFetch, foregroundPeriodMs })` للاستدعاء من `App.tsx`.
+- ✅ **Events & Logs:**
+  - `services/sync/events/syncEvents.ts` — pub/sub خفيف بـ discriminated union (12 نوع حدث) + ring-buffer للـ Dashboard.
+  - `services/sync/syncLogger.ts` — كتابة `sync_logs` (append-only persisted) مع pruneOldLogs + getRecentLogs.
+- ✅ **Feature-Layer Helpers:**
+  - `services/sync/enqueueHelpers.ts` — `enqueueReadingSave`، `enqueueReadingDelete`، `enqueueBondSave`، `enqueueBondPaymentSave`، `reenqueueAllDirtyReadings`. كلها fire-and-forget مع pushOnly تلقائي.
+- ✅ **Public Façade:**
+  - `services/sync/index.ts` — Barrel يُصدّر `syncNow`/`enqueueReadingSave`/`syncEvents`/`getStats`/إلخ. شاشات الفيتشرز تستورد من هنا فقط.
+- ✅ **Types & Configuration:**
+  - `services/sync/types.ts` — `SyncEngineConfig`, `PullEntityKey`, `PushHandler`, `PullHandler`, `QueueItemOutcome`, `SyncTriggerReason`. + `DEFAULT_SYNC_CONFIG`.
+- ✅ **Documentation:**
+  - `services/sync/README.md` — Architecture diagrams + LWW rules + retry timeline + error classification table + Golden Rules.
+- ✅ **ADRs الجديدة:** 013 (Local-Wins LWW)، 014 (Push-First ordering)، 015 (Background = Push-only)، 016 (Queue dedup).
+- ✅ **Total Phase 4:** 22 ملف جديد (21 TS + 1 README)، 3,466 سطر، ~123 KB.
 
 ---
 
