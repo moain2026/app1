@@ -19,3 +19,21 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+// ─── Transitive androidx.core pin ────────────────────────────────────────────
+// RN 0.74.5 ships with Android Gradle Plugin 8.2.x + compileSdk 34. Some
+// transitive native modules pull androidx.core:core(-ktx):1.16.0, which
+// declares minCompileSdk=35 and requires AGP >= 8.6.0 — incompatible with
+// our toolchain and breaks `assembleDebug` with CheckAarMetadataWorkAction.
+//
+// Pinning to 1.13.1 (the last 1.13.x release, compatible with compileSdk 34
+// and AGP 8.2.x) restores compatibility. When the project upgrades to AGP
+// 8.6+ and compileSdk 35+, this block should be removed.
+allprojects {
+    configurations.configureEach {
+        resolutionStrategy {
+            force "androidx.core:core:1.13.1"
+            force "androidx.core:core-ktx:1.13.1"
+        }
+    }
+}
