@@ -20,6 +20,7 @@ import React from 'react';
 
 import { AboutScreen } from '@/screens/main/AboutScreen';
 import { ProfileScreen } from '@/screens/main/ProfileScreen';
+import { ReadingDetailScreen } from '@/screens/main/ReadingDetailScreen';
 import { SettingsScreen } from '@/screens/main/SettingsScreen';
 import { ServerSettingsScreen } from '@/screens/settings/ServerSettingsScreen';
 
@@ -51,6 +52,13 @@ export function MainStack(): React.JSX.Element {
       <Drawer.Screen
         name="ServerSettings"
         component={ServerSettingsScreen}
+      />
+      {/* Wave 4 — reachable via navigation.navigate('ReadingDetail', ...).
+          Not listed in DrawerContent so it doesn't appear in the side menu. */}
+      <Drawer.Screen
+        name="ReadingDetail"
+        component={ReadingDetailScreen}
+        options={{ swipeEnabled: false }}
       />
     </Drawer.Navigator>
   );
