@@ -52,7 +52,7 @@
     "react-native-mmkv": "^2.12.2",
     "react-native-config": "^1.5.3",
     "react-native-vector-icons": "^10.1.0",
-    "react-native-svg": "^15.6.0",
+    "react-native-svg": "~15.6.0",
 
     "react-native-vision-camera": "^4.5.2",
     "vision-camera-code-scanner": "^0.2.0",
