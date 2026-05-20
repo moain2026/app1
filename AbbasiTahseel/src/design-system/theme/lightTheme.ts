@@ -24,9 +24,7 @@ import {
 import type { Theme } from './darkTheme';
 
 export const lightTheme: Theme = {
-  name: 'light' as const,
-  // @ts-expect-error — different literal types between themes is intentional;
-  // both satisfy `Theme` structurally.
+  name: 'light',
   isDark: false,
 
   colors: {

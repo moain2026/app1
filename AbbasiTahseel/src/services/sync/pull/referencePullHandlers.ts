@@ -294,9 +294,9 @@ export const bondPullHandler: PullHandler = {
         if (local) {
           // LWW: skip if collector is mid-edit.
           if (
-            local.syncStatus === 'dirty' ||
-            local.syncStatus === 'syncing' ||
-            local.syncStatus === 'failed'
+            local.pushStatus === 'dirty' ||
+            local.pushStatus === 'syncing' ||
+            local.pushStatus === 'failed'
           ) {
             skipped += 1;
             continue;
@@ -313,7 +313,7 @@ export const bondPullHandler: PullHandler = {
             if (dto.bondDate) {
               row.bondDate = dto.bondDate;
             }
-            row.syncStatus = 'pristine';
+            row.pushStatus = 'pristine';
             row.syncAttempts = 0;
             row.lastError = null;
             row.remoteId = dto.remoteId;
@@ -332,7 +332,7 @@ export const bondPullHandler: PullHandler = {
             row.amountPaid = dto.amountPaid;
             row.notes = dto.notes;
             row.bondDate = dto.bondDate ?? new Date();
-            row.syncStatus = 'pristine';
+            row.pushStatus = 'pristine';
             row.syncAttempts = 0;
             row.lastError = null;
           });
@@ -373,9 +373,9 @@ export const bondPaymentPullHandler: PullHandler = {
         const local = byRemoteId.get(dto.remoteId);
         if (local) {
           if (
-            local.syncStatus === 'dirty' ||
-            local.syncStatus === 'syncing' ||
-            local.syncStatus === 'failed'
+            local.pushStatus === 'dirty' ||
+            local.pushStatus === 'syncing' ||
+            local.pushStatus === 'failed'
           ) {
             skipped += 1;
             continue;
@@ -389,7 +389,7 @@ export const bondPaymentPullHandler: PullHandler = {
             if (dto.paymentDate) {
               row.paymentDate = dto.paymentDate;
             }
-            row.syncStatus = 'pristine';
+            row.pushStatus = 'pristine';
             row.syncAttempts = 0;
             row.lastError = null;
             row.remoteId = dto.remoteId;
@@ -410,7 +410,7 @@ export const bondPaymentPullHandler: PullHandler = {
             row.referenceNo = dto.referenceNo;
             row.notes = dto.notes;
             row.paymentDate = dto.paymentDate ?? new Date();
-            row.syncStatus = 'pristine';
+            row.pushStatus = 'pristine';
             row.syncAttempts = 0;
             row.lastError = null;
           });

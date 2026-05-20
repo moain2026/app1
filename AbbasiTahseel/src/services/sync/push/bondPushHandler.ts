@@ -122,7 +122,3 @@ export const bondPaymentPushHandler: PushHandler<BondPaymentPushPayload> = {
     }
   },
 };
-fyError(err);
-    }
-  },
-};

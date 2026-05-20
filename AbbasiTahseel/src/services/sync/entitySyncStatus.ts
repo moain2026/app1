@@ -17,7 +17,7 @@ import { Q } from '@nozbe/watermelondb';
 import type { Model } from '@nozbe/watermelondb';
 
 import { database } from '../../database';
-import type { SyncStatus } from '../../database/models/Reading';
+import type { PushStatus } from '../../database/models/Reading';
 import type { SyncEntityType } from '../../database/models/SyncQueueItem';
 import { logger } from '../../utils/logger';
 
@@ -27,7 +27,7 @@ const log = logger.scope('EntitySync');
 
 interface SyncableModel extends Model {
   localUuid: string;
-  syncStatus: SyncStatus;
+  pushStatus: PushStatus;
   lastSyncAttemptAt?: Date | null;
   lastError?: string | null;
   syncAttempts: number;
@@ -65,7 +65,7 @@ export async function markEntityAsSyncing(
   if (!entity) return;
   await database.write(async () => {
     await entity.update(row => {
-      row.syncStatus = 'syncing';
+      row.pushStatus = 'syncing';
       row.lastSyncAttemptAt = new Date();
       row.syncAttempts = row.syncAttempts + 1;
     });
@@ -81,7 +81,7 @@ export async function markEntityAsSynced(
   if (!entity) return;
   await database.write(async () => {
     await entity.update(row => {
-      row.syncStatus = 'synced';
+      row.pushStatus = 'synced';
       row.lastError = null;
       if (remoteId != null) {
         row.remoteId = remoteId;
@@ -99,7 +99,7 @@ export async function markEntityAsDirty(
   if (!entity) return;
   await database.write(async () => {
     await entity.update(row => {
-      row.syncStatus = 'dirty';
+      row.pushStatus = 'dirty';
       row.lastError = reason;
     });
   });
@@ -114,7 +114,7 @@ export async function markEntityAsFailed(
   if (!entity) return;
   await database.write(async () => {
     await entity.update(row => {
-      row.syncStatus = 'failed';
+      row.pushStatus = 'failed';
       row.lastError = reason;
     });
   });
@@ -136,7 +136,7 @@ export async function resetFailedEntities(entityType: SyncEntityType): Promise<n
       const syncable = row as unknown as SyncableModel;
       await syncable.update(r => {
         const s = r as unknown as SyncableModel;
-        s.syncStatus = 'dirty';
+        s.pushStatus = 'dirty';
         s.syncAttempts = 0;
         s.lastError = null;
       });
@@ -150,12 +150,12 @@ export async function resetFailedEntities(entityType: SyncEntityType): Promise<n
  * Lookup helper used by callers that already know the localUuid (e.g. when
  * a screen wants to show the latest sync state of a specific reading).
  */
-export async function getSyncStatusFor(
+export async function getPushStatusFor(
   entityType: SyncEntityType,
   localUuid: string,
-): Promise<SyncStatus | null> {
+): Promise<PushStatus | null> {
   const entity = await findEntity(entityType, localUuid);
-  return entity?.syncStatus ?? null;
+  return entity?.pushStatus ?? null;
 }
 
 /**

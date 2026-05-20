@@ -49,7 +49,7 @@ export {
 
 // ─── Entity status helpers ────────────────────────────────────────────────
 export {
-  getSyncStatusFor,
+  getPushStatusFor,
   resetFailedEntities,
   markEntityAsSyncing,
   markEntityAsSynced,

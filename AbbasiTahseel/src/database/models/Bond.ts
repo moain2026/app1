@@ -2,11 +2,11 @@
  * Bond Model — السندات
  */
 
-import { Model, Q, type Collection } from '@nozbe/watermelondb';
+import { Model, Q, type Query } from '@nozbe/watermelondb';
 import { children, date, field, lazy, readonly, text } from '@nozbe/watermelondb/decorators';
 
 import type { BondPayment } from './BondPayment';
-import type { SyncStatus } from './Reading';
+import type { PushStatus } from './Reading';
 
 export class Bond extends Model {
   static table = 'bonds';
@@ -27,7 +27,7 @@ export class Bond extends Model {
   @text('notes') notes?: string | null;
   @date('bond_date') bondDate!: Date;
 
-  @text('sync_status') syncStatus!: SyncStatus;
+  @text('sync_status') pushStatus!: PushStatus;
   @date('last_sync_attempt_at') lastSyncAttemptAt?: Date | null;
   @text('last_error') lastError?: string | null;
   @field('sync_attempts') syncAttempts!: number;
@@ -36,7 +36,7 @@ export class Bond extends Model {
   @readonly @date('updated_at') updatedAt!: Date;
 
   /** All payments associated with this bond (reactive). */
-  @children('bond_payments') payments!: Collection<BondPayment>;
+  @children('bond_payments') payments!: Query<BondPayment>;
 
   /** Outstanding balance = amount - amountPaid. */
   get remainingAmount(): number {

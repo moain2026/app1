@@ -38,12 +38,16 @@ const SVC = {
 const KEYCHAIN_USERNAME = 'abbasi-tahseel';
 
 // ─── Common Keychain options ──────────────────────────────────────────────
-const baseOptions: Keychain.SetOptions = {
+const baseOptions: Keychain.Options = {
   accessible: Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK,
   // We intentionally DO NOT use BIOMETRY — workers wear gloves (per ADR-007).
   // Authentication-type is left as DEVICE_PASSCODE_OR_BIOMETRY's default
   // which on Android simply means "device unlocked".
-  storage: Keychain.STORAGE_TYPE.AES_GCM,
+  //
+  // STORAGE_TYPE.AES in react-native-keychain@8.2.x maps to KeystoreAESCBC,
+  // backed by Android KeyStore (hardware-backed on devices with TEE/StrongBox).
+  // The library does not expose AES_GCM as a discrete STORAGE_TYPE here.
+  storage: Keychain.STORAGE_TYPE.AES,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

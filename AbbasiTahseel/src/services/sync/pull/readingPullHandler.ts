@@ -45,7 +45,7 @@ const COLLECTION = 'readings';
  * any in-flight or pending work.
  */
 function canOverwriteLocal(local: Reading): boolean {
-  return local.syncStatus === 'pristine' || local.syncStatus === 'synced';
+  return local.pushStatus === 'pristine' || local.pushStatus === 'synced';
 }
 
 /**
@@ -67,7 +67,7 @@ function applyDtoToRow(row: Reading, dto: ItemReadingDto): void {
   row.cas = dto.cas;
   row.asts = dto.asts;
   row.remoteId = dto.num; // legacy "num" doubles as the remote id
-  row.syncStatus = 'pristine';
+  row.pushStatus = 'pristine';
   row.lastError = null;
   row.syncAttempts = 0;
 }
