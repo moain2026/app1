@@ -168,10 +168,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // Wire-compatible with the LEGACY AuthRepository (Java app) contract:
   //   POST /electric/Login
   //   Content-Type: application/json
-  //   { "username": "...", "password": "...", "appId": "<branch>", "secureId": "<deviceId>" }
+  //   { "username": "...", "password": "...", "appid": "<branch>", "secureId": "<deviceId>" }
   //   → Users object with embedded `access_token` (+ optional refresh_token)
   //
-  // `appId` comes from prefs (branch number — default "1"). `secureId` is
+  // ⚠️ FIELD NAME ALERT — `appid` is LOWERCASE on the wire.
+  //   The legacy AuthData.java has `@Json(name = "appid")` (lowercase), and
+  //   the PHP backend reads `$_POST['appid']` (case-sensitive). Sending
+  //   `appId` (camelCase) results in HTTP 200 with an empty `{}` body —
+  //   the diagnostic we hit on the first real-server login attempt.
+  //
+  // `appid` comes from prefs (branch number — default "1"). `secureId` is
   // the device id used by license activation (stable across reinstalls).
   async login(username, password) {
     set({ isLoading: true, error: null, lastLoginError: null });
@@ -217,17 +223,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     // Pre-build the redacted request body so it can be reused for both the
     // happy path log and the failure snapshot.
+    //
+    // ⚠️ The wire field is `appid` (lowercase) to match the legacy
+    // AuthData.java contract — see comment block above the login() method.
     const redactedBody: Record<string, string> = {
       username,
       password: `<${password.length} chars>`,
-      appId,
+      appid: appId,
       secureId: maskSecureId(secureId),
     };
     log.debug('login attempt', redactedBody);
 
     try {
       const raw = await api.call<unknown>('login', {
-        body: { username, password, appId, secureId },
+        body: { username, password, appid: appId, secureId },
       });
       const parsed = LoginUserResponseSchema.safeParse(raw);
       if (!parsed.success) {

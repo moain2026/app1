@@ -64,7 +64,8 @@ const form = (
 export const Endpoints = {
   // ─── Auth ───────────────────────────────────────────────────────────────
   // Primary login — matches the LEGACY AuthRepository contract:
-  //   POST /electric/Login  with JSON body { username, password, appId, secureId }
+  //   POST /electric/Login  with JSON body { username, password, appid, secureId }
+  //   ⚠️ `appid` is LOWERCASE on the wire — see AuthData.java @Json(name="appid").
   //   → returns the Users object (with embedded access_token).
   // The path is INTENTIONALLY capitalised ("Login") to mirror the legacy
   // server's case-sensitive routing — see ElectricCollector_Full_Analysis/
