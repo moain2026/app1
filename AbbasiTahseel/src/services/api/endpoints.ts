@@ -63,13 +63,50 @@ const form = (
 // ─── The registry ─────────────────────────────────────────────────────────
 export const Endpoints = {
   // ─── Auth ───────────────────────────────────────────────────────────────
-  // Primary login — matches the LEGACY AuthRepository contract:
-  //   POST /electric/Login  with JSON body { username, password, appId, secureId }
-  //   → returns the Users object (with embedded access_token).
-  // The path is INTENTIONALLY capitalised ("Login") to mirror the legacy
-  // server's case-sensitive routing — see ElectricCollector_Full_Analysis/
-  // source_code/com/yd/electricecollector/model/AuthRepository.java line 21.
-  login: json('Login', 'POST', 'تسجيل دخول (JSON — Users response)', false),
+  //
+  // 🔑 PRIMARY auth endpoint — `/Authenticate`.
+  //
+  // The backend is a **.NET WCF service** (confirmed by:
+  //   • WCF Service Explorer pages at root `/electric` with Arabic UI
+  //     ("الخدمة" / "أسلوب" / "Uri")
+  //   • Error string "الأسلوب غير مسموح. الرجاء مراجعة صفحة تعليمات الخدمة"
+  //   • DataContract namespace `http://schemas.datacontract.org/2004/07/
+  //     MProgService.models`
+  //   • XML schemas using the canonical WCF/.NET serialization namespaces).
+  //
+  // The OFFICIAL Authenticate contract (from the live server's Help page
+  // at http://100.87.131.115:3000/electric/Authenticate) is:
+  //
+  //   POST /electric/Authenticate
+  //   Content-Type: application/json
+  //   Body: { "Password": "...", "User": "...", "appId": "..." }
+  //          ↑ note Capital P / Capital U / camelCase appId
+  //   Response: a JSON **string** (e.g. `"eyJ…"`) — NOT an object.
+  //
+  // The legacy Java app talked to `/Login` (POST, JSON, Users-object
+  // response). We keep `login` registered as a FALLBACK in case the
+  // server still hosts both routes, but prefer `/Authenticate` because:
+  //   1. It is the only auth route documented in the live Service Explorer.
+  //   2. Every other documented endpoint already uses `appId` (camelCase)
+  //      in its query string — `/Authenticate` matches that convention.
+  //   3. `/Login` returned HTTP 200 with an empty `{}` body on the first
+  //      field test — strongly suggests it is a stub or deprecated route.
+  authenticate: json(
+    'Authenticate',
+    'POST',
+    'مصادقة WCF رسمية (JSON — رد نصي خام)',
+    false,
+  ),
+  // FALLBACK — POST /electric/Login appears in the operations index but
+  // has no documented Help page on the live server. Schema best-guessed
+  // from the legacy Java AuthRepository:
+  //   { "username", "password", "appId", "secureId" } → Users object.
+  login: json(
+    'Login',
+    'POST',
+    'تسجيل دخول قديم (JSON — Users response) — fallback',
+    false,
+  ),
   // Alternate auth endpoint (token-only response). Kept for future use.
   userAuth: json('UserAuth', 'POST', 'مصادقة المستخدم (JSON — token only)', false),
   refresh: form('refresh', 'POST', 'تجديد التوكن', false),

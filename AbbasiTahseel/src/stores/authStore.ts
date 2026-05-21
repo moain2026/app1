@@ -24,6 +24,7 @@ import { create } from 'zustand';
 import { api } from '@/services/api';
 import {
   AccessTokenResponseSchema,
+  AuthenticateResponseSchema,
   LoginUserResponseSchema,
   type LoginUserResponse,
 } from '@/services/api/schemas/auth';
@@ -165,14 +166,37 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   // ─── login ──────────────────────────────────────────────────────────
   //
-  // Wire-compatible with the LEGACY AuthRepository (Java app) contract:
+  // Two-stage authentication against the **.NET WCF** backend at
+  // `<scheme>://<host>:3000/electric/`.
+  //
+  // ────────────────────────────────────────────────────────────────────
+  //  STAGE 1 — `/Authenticate` (PRIMARY, official WCF contract)
+  // ────────────────────────────────────────────────────────────────────
+  //   POST /electric/Authenticate
+  //   Content-Type: application/json
+  //   Body: { "User": "...", "Password": "...", "appId": "<branch>" }
+  //         ↑ Capital U / Capital P / camelCase appId
+  //   Response: JSON string literal — `"token-value"` (no surrounding
+  //             object). Empty string means failure.
+  //
+  // ────────────────────────────────────────────────────────────────────
+  //  STAGE 2 — `/Login` (LEGACY FALLBACK, only used if Stage 1 fails)
+  // ────────────────────────────────────────────────────────────────────
   //   POST /electric/Login
   //   Content-Type: application/json
-  //   { "username": "...", "password": "...", "appId": "<branch>", "secureId": "<deviceId>" }
-  //   → Users object with embedded `access_token` (+ optional refresh_token)
+  //   Body: { "username", "password", "appId", "secureId" }
+  //   Response: Users object with embedded `access_token` (matches the
+  //             legacy Retrofit/Moshi shape from AuthData.java).
   //
-  // `appId` comes from prefs (branch number — default "1"). `secureId` is
-  // the device id used by license activation (stable across reinstalls).
+  // Both stages share their own redacted-body snapshot for the diagnostic
+  // `lastLoginError` surface. When STAGE 2 also fails, STAGE 1's response
+  // body is appended in the diagnostic for cross-comparison.
+  //
+  // ⚠️ Wire-name reminder for future maintainers:
+  //   • `/Authenticate` → fields are `User`, `Password`, `appId`.
+  //   • `/Login`        → fields are `username`, `password`, `appId`, `secureId`.
+  //   • Every other WCF endpoint accepts `appId` (camelCase) in its query
+  //     string — keep that consistent.
   async login(username, password) {
     set({ isLoading: true, error: null, lastLoginError: null });
 
@@ -213,17 +237,130 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     const appId = getBranchNumber();
     const secureId = await getSecureId();
-    const url = `${getBaseUrl()}Login`;
+    const baseUrl = getBaseUrl();
 
-    // Pre-build the redacted request body so it can be reused for both the
-    // happy path log and the failure snapshot.
-    const redactedBody: Record<string, string> = {
+    // ─── Helpers — extract diagnostic fields from any error shape ─────
+    const extractResponseBody = (err: unknown, fallback: string): string => {
+      const errObj: Record<string, unknown> =
+        err && typeof err === 'object' ? (err as Record<string, unknown>) : {};
+      if (typeof errObj.responseBody === 'string') return errObj.responseBody;
+      const details = errObj.details;
+      if (details && typeof details === 'object') {
+        const body = (details as Record<string, unknown>).responseBody;
+        if (typeof body === 'string') return body;
+        if (body !== undefined) return JSON.stringify(body, null, 2);
+      }
+      return fallback;
+    };
+    const extractHttpStatus = (err: unknown): number | null => {
+      const errObj: Record<string, unknown> =
+        err && typeof err === 'object' ? (err as Record<string, unknown>) : {};
+      return typeof errObj.httpStatus === 'number' ? errObj.httpStatus : null;
+    };
+    const extractErrorCode = (err: unknown): string => {
+      const errObj: Record<string, unknown> =
+        err && typeof err === 'object' ? (err as Record<string, unknown>) : {};
+      if (typeof errObj.code === 'string' && errObj.code.length > 0) {
+        return errObj.code;
+      }
+      return err instanceof Error ? err.name : 'UNKNOWN';
+    };
+
+    // ─── STAGE 1 — /Authenticate (official WCF contract) ──────────────
+    const authenticateUrl = `${baseUrl}Authenticate`;
+    const authenticateRedacted: Record<string, string> = {
+      User: username,
+      Password: `<${password.length} chars>`,
+      appId,
+    };
+    log.debug('STAGE 1 — /Authenticate attempt', {
+      url: authenticateUrl,
+      ...authenticateRedacted,
+    });
+
+    // Captured for cross-attempt diagnostics: if STAGE 2 also fails, we
+    // prepend STAGE 1's response body so the operator can see both.
+    let stage1Diagnostic: string | null = null;
+
+    try {
+      const raw = await api.call<unknown>('authenticate', {
+        body: { User: username, Password: password, appId },
+      });
+
+      // The WCF Help page documents the response as a JSON string literal.
+      // Axios decodes the body `"abc"` into the JS string `'abc'`.
+      const parsed = AuthenticateResponseSchema.safeParse(raw);
+
+      if (parsed.success && parsed.data.length > 0) {
+        const access = parsed.data;
+        // /Authenticate gives us a token but no Users payload — mint a
+        // minimal AuthUser. A subsequent /GetListUsers call (Wave 3) will
+        // hydrate the full identity and permission flags. For now we let
+        // the operator into the app with conservative defaults.
+        const minimalUser: AuthUser = {
+          username,
+          permissions: {
+            canDelete: false,
+            canEdit: false,
+            canViewReports: false,
+            canViewAllReadings: false,
+            canViewAllSubscribers: false,
+            isAdmin: false,
+          },
+        };
+
+        await Promise.all([
+          setAccessToken(access),
+          setRefreshToken(access), // /Authenticate has no separate refresh
+          setLastUsername(username),
+        ]);
+        setLastLoginAt(new Date());
+
+        set({
+          user: minimalUser,
+          accessToken: access,
+          refreshToken: access,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+          lastLoginError: null,
+          isDevBypass: false,
+        });
+        log.info('STAGE 1 — /Authenticate success', { username });
+        return true;
+      }
+
+      // Schema parse failed OR token empty → record diagnostic and fall
+      // through to STAGE 2.
+      const rawAsString =
+        typeof raw === 'string' ? raw : JSON.stringify(raw, null, 2);
+      stage1Diagnostic = `STAGE 1 — POST ${authenticateUrl}\nResult: schema invalid or empty token.\nServer returned:\n${rawAsString}`;
+      log.warn('STAGE 1 failed — schema invalid or empty', {
+        rawType: typeof raw,
+        length: rawAsString.length,
+      });
+    } catch (err) {
+      // Network or HTTP error on /Authenticate. Capture the raw response
+      // body for the diagnostic surface, then fall through to STAGE 2.
+      const status = extractHttpStatus(err);
+      const code = extractErrorCode(err);
+      const body = extractResponseBody(
+        err,
+        err instanceof Error ? err.message : String(err),
+      );
+      stage1Diagnostic = `STAGE 1 — POST ${authenticateUrl}\nResult: HTTP ${status ?? '—'} ${code}\n${body}`;
+      log.warn('STAGE 1 threw', { status, code });
+    }
+
+    // ─── STAGE 2 — /Login (legacy fallback) ───────────────────────────
+    const loginUrl = `${baseUrl}Login`;
+    const loginRedacted: Record<string, string> = {
       username,
       password: `<${password.length} chars>`,
       appId,
       secureId: maskSecureId(secureId),
     };
-    log.debug('login attempt', redactedBody);
+    log.debug('STAGE 2 — /Login attempt', loginRedacted);
 
     try {
       const raw = await api.call<unknown>('login', {
@@ -231,17 +368,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
       const parsed = LoginUserResponseSchema.safeParse(raw);
       if (!parsed.success) {
-        log.warn('login response failed schema validation');
+        log.warn('STAGE 2 — /Login response failed schema validation');
+        const rawAsString =
+          typeof raw === 'string' ? raw : JSON.stringify(raw, null, 2);
         set({
           isLoading: false,
           error: 'auth.login.invalidCredentials',
           lastLoginError: {
-            url,
+            url: loginUrl,
             method: 'POST',
-            requestBody: redactedBody,
+            requestBody: loginRedacted,
             responseStatus: 200,
             responseBody:
-              typeof raw === 'string' ? raw : JSON.stringify(raw, null, 2),
+              stage1Diagnostic !== null
+                ? `${stage1Diagnostic}\n\n──────────\nSTAGE 2 (/Login) — schema invalid.\nServer returned:\n${rawAsString}`
+                : rawAsString,
             errorCode: 'SCHEMA_INVALID',
             timestamp: new Date().toISOString(),
           },
@@ -256,16 +397,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const refresh = u.refresh_token ?? access;
 
       if (access.length === 0) {
-        log.warn('login response had no access_token');
+        log.warn('STAGE 2 — /Login response had no access_token');
+        const usersJson = JSON.stringify(u, null, 2);
         set({
           isLoading: false,
           error: 'auth.login.invalidCredentials',
           lastLoginError: {
-            url,
+            url: loginUrl,
             method: 'POST',
-            requestBody: redactedBody,
+            requestBody: loginRedacted,
             responseStatus: 200,
-            responseBody: JSON.stringify(u, null, 2),
+            responseBody:
+              stage1Diagnostic !== null
+                ? `${stage1Diagnostic}\n\n──────────\nSTAGE 2 (/Login) — no access_token in response.\nServer returned:\n${usersJson}`
+                : usersJson,
             errorCode: 'NO_ACCESS_TOKEN',
             timestamp: new Date().toISOString(),
           },
@@ -292,35 +437,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         lastLoginError: null,
         isDevBypass: false,
       });
-      log.info('login success', { username });
+      log.info('STAGE 2 — /Login fallback success', { username });
       return true;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      log.warn('login threw', { message: msg });
-
-      // Extract AppError / Axios-error fields without using `any`.
-      const errObj: Record<string, unknown> =
-        err && typeof err === 'object' ? (err as Record<string, unknown>) : {};
-      const httpStatus =
-        typeof errObj.httpStatus === 'number' ? errObj.httpStatus : null;
-      const errorCode =
-        typeof errObj.code === 'string' && errObj.code.length > 0
-          ? errObj.code
-          : err instanceof Error
-            ? err.name
-            : 'UNKNOWN';
-
-      // Try to surface the server's raw response (most useful for diagnosis).
-      const details = errObj.details;
-      const responseBody = (() => {
-        if (typeof errObj.responseBody === 'string') return errObj.responseBody;
-        if (details && typeof details === 'object') {
-          const body = (details as Record<string, unknown>).responseBody;
-          if (typeof body === 'string') return body;
-          if (body !== undefined) return JSON.stringify(body, null, 2);
-        }
-        return msg;
-      })();
+      log.warn('STAGE 2 — /Login threw', { message: msg });
+      const httpStatus = extractHttpStatus(err);
+      const errorCode = extractErrorCode(err);
+      const responseBody = extractResponseBody(err, msg);
 
       set({
         isLoading: false,
@@ -329,11 +453,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             ? 'auth.login.invalidCredentials'
             : 'auth.login.networkError',
         lastLoginError: {
-          url,
+          url: loginUrl,
           method: 'POST',
-          requestBody: redactedBody,
+          requestBody: loginRedacted,
           responseStatus: httpStatus,
-          responseBody,
+          responseBody:
+            stage1Diagnostic !== null
+              ? `${stage1Diagnostic}\n\n──────────\nSTAGE 2 (/Login) — HTTP ${httpStatus ?? '—'} ${errorCode}\n${responseBody}`
+              : responseBody,
           errorCode,
           timestamp: new Date().toISOString(),
         },
