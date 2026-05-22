@@ -33,6 +33,11 @@ export const darkTheme = {
     background: palette.darkBg,
     surface: palette.darkSurface,
     surfaceElevated: palette.darkSurfaceElevated,
+    /**
+     * Subtle, slightly-dimmer-than-surface fill used by chips, picker rows,
+     * search-bar bg, and zebra striping inside report tables.
+     */
+    surfaceMuted: palette.darkSurfaceMuted,
     sheet: palette.darkSurface,
     overlay: palette.darkOverlay,
 

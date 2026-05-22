@@ -44,7 +44,7 @@ export function EmptyState(props: EmptyStateProps): React.JSX.Element {
       <View
         style={[
           styles.iconWrap,
-          { backgroundColor: colors.surfaceMuted ?? colors.surface },
+          { backgroundColor: colors.surfaceMuted },
         ]}
       >
         <Feather name={icon} size={48} color={colors.textTertiary} />

@@ -39,7 +39,7 @@ export function SearchBar(props: SearchBarProps): React.JSX.Element {
       style={[
         styles.container,
         {
-          backgroundColor: colors.surfaceMuted ?? colors.surface,
+          backgroundColor: colors.surfaceMuted,
           borderColor: colors.border,
         },
       ]}

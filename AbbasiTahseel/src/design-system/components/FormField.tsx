@@ -118,7 +118,7 @@ export function FormField(props: FormFieldProps): React.JSX.Element {
         styles.fieldRow,
         {
           backgroundColor: disabled
-            ? colors.surfaceMuted ?? colors.surface
+            ? colors.surfaceMuted
             : colors.surface,
           borderColor,
         },

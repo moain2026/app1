@@ -39,7 +39,7 @@ export function Chip(props: ChipProps): React.JSX.Element {
         {
           backgroundColor: selected
             ? colors.accent
-            : colors.surfaceMuted ?? colors.surface,
+            : colors.surfaceMuted,
           borderColor: selected ? colors.accent : colors.border,
           opacity: pressed ? 0.85 : 1,
         },

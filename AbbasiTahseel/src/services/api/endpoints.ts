@@ -66,18 +66,10 @@ const json = (
   description,
 });
 
-const form = (
-  path: string,
-  method: HttpMethod,
-  description: string,
-  requiresAuth = false,
-): EndpointDescriptor => ({
-  path,
-  method,
-  requiresAuth,
-  contentType: 'application/x-www-form-urlencoded',
-  description,
-});
+// NOTE: a form-urlencoded helper used to live here for legacy mutation
+// endpoints; the live WCF server accepts JSON for every mutation, so the
+// helper was removed (Wave 6-Α). If a future endpoint truly needs
+// `application/x-www-form-urlencoded`, reintroduce a `form()` builder.
 
 const deprecated = (
   path: string,
@@ -136,6 +128,15 @@ export const Endpoints = {
   getListReadingCounter: json('GetListReadingCounter', 'GET', 'قراءات العدادات'),
   // POST /SaveReading (JSON @Body ItemReading)
   saveReading: json('SaveReading', 'POST', 'حفظ قراءة (JSON @Body)'),
+  //
+  // ⚠️ `updateReading` and `deleteReading` were inherited from the legacy
+  // Java ApiService.java but the WCF Help dump does NOT list them. They
+  // remain registered (deprecated) so the existing readingPushHandler
+  // continues to compile. Wave 6-Β must decide:
+  //   (a) re-route updates through SaveReading (server-side upsert), OR
+  //   (b) introduce the missing endpoints on the backend.
+  // Until then, calls will fail at runtime — the queue marks the item
+  // as `failed` and surfaces an error to the operator.
 
   // ─── Bonds (5 live — full CRUD confirmed on WCF) ────────────────────────
   // GET /GetListBonds?num&num_s&sdate&edate&currency&nou&appId
@@ -227,6 +228,25 @@ export const Endpoints = {
   report1: deprecated('report1', 'GET', 'تقرير غامض'),
   /** @deprecated Alias for getRepBalanceHeader — kept for posts.ts compatibility. */
   posts: deprecated('GetRepBalanceHeader', 'GET', 'بديل لميزان عام'),
+
+  /**
+   * @deprecated Not on WCF Help. The legacy Java client used a PUT-style
+   * UpdateReading; the new WCF only exposes `SaveReading` (assumed to do
+   * upsert). Kept here so `readingPushHandler` compiles — Wave 6-Β will
+   * either remove the handler branch or wire it through `saveReading`.
+   */
+  updateReading: deprecated('UpdateReading', 'PUT', 'تحديث قراءة (غير معتمد)'),
+
+  /**
+   * @deprecated Not on WCF Help. Kept so the existing `readingPushHandler`
+   * delete branch compiles. Wave 6-Β must decide whether the backend will
+   * grow a DeleteReading endpoint or whether deletions are soft (flag).
+   */
+  deleteReading: deprecated(
+    'DeleteReading',
+    'DELETE',
+    'حذف قراءة (غير معتمد)',
+  ),
 } as const;
 
 export type EndpointKey = keyof typeof Endpoints;
@@ -245,8 +265,12 @@ export function getEndpoint(key: EndpointKey): EndpointDescriptor {
  * Breakdown (live / deprecated):
  *   • live      = 27  (auth 3, ref 5, readings 2, bonds 5, payments 4,
  *                       balance 2, reports 7, messaging 1, test 1)
- *   • deprecated= 7   (kept for back-compat, never called)
- *   • TOTAL     = 34  (matches WCF Help: 30 live ops + 4 dropped guesses)
+ *   • deprecated= 9   (refresh, register, userAuth, getRepBalanceDetails,
+ *                       getListCurrency, report1, posts, updateReading,
+ *                       deleteReading) — kept for back-compat with the
+ *                       legacy ApiService.java surface; never called by
+ *                       new code.
+ *   • TOTAL     = 36
  */
 export const ENDPOINT_COUNT = Object.keys(Endpoints).length;
 

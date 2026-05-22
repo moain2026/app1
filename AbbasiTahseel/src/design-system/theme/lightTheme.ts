@@ -32,6 +32,11 @@ export const lightTheme: Theme = {
     background: palette.lightBg,
     surface: palette.lightSurface,
     surfaceElevated: palette.lightSurfaceElevated,
+    /**
+     * Subtle, slightly-dimmer-than-surface fill used by chips, picker rows,
+     * search-bar bg, and zebra striping inside report tables.
+     */
+    surfaceMuted: palette.lightSurfaceMuted,
     sheet: palette.lightSurface,
     overlay: palette.lightOverlay,
 

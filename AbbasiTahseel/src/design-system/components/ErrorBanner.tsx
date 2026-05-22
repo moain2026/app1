@@ -50,7 +50,7 @@ export function ErrorBanner(props: ErrorBannerProps): React.JSX.Element {
       icon: 'alert-triangle',
     },
     info: {
-      bg: colors.surfaceMuted ?? '#F0F0F0',
+      bg: colors.surfaceMuted,
       fg: colors.textSecondary,
       icon: 'info',
     },
