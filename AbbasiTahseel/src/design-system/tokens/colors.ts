@@ -33,6 +33,12 @@ export const palette = {
   darkBg: '#121212', // app background
   darkSurface: '#1E1E1E', // cards / sheets level 1
   darkSurfaceElevated: '#2A2A2A', // elevated cards / inputs
+  /**
+   * Dim variant used for chips / picker rows / search-bar bg in dark mode.
+   * Sits between bg and surface so nested controls remain visible without
+   * competing with elevated cards.
+   */
+  darkSurfaceMuted: '#181818',
   darkBorder: '#2F2F2F', // subtle dividers
   darkBorderStrong: '#3A3A3A', // emphasized dividers
   darkOverlay: 'rgba(0, 0, 0, 0.6)', // bottom sheet backdrop
@@ -45,6 +51,12 @@ export const palette = {
   lightBg: '#F6F6F9',
   lightSurface: '#FFFFFF',
   lightSurfaceElevated: '#FAFAFD',
+  /**
+   * Subtle off-white used for chips, picker rows, search-bar backgrounds —
+   * a touch dimmer than `lightSurface` so they recede when nested inside
+   * an elevated card.
+   */
+  lightSurfaceMuted: '#F2F2F6',
   lightBorder: '#EAEAEA',
   lightBorderStrong: '#D4D4D4',
   lightOverlay: 'rgba(0, 0, 0, 0.4)',
