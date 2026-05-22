@@ -1,32 +1,44 @@
 /**
  * BondDetailScreen — view-only detail of a single bond.
  *
- * Reachable via `navigation.navigate('BondDetail', { localUuid })`.
- * Shows:
- *   • Bond header card (no, type, status badge)
- *   • Account info card (name, num, current balance — mock)
- *   • Amount card (amount, paid, remaining, currency)
- *   • Notes card (if any)
- *   • Payments list (child entity) with "+ دفعة جديدة" CTA
- *   • Bottom action bar: [طباعة] [تعديل] [حذف]
+ * Wave 6-Β — wired to WatermelonDB:
+ *   • `observeBondByUuid(localUuid)` — reactive single-row observable.
+ *     Re-emits when the bond row updates (e.g. a new payment lands and
+ *     `amount_paid` is recomputed) OR when the row is destroyed
+ *     (emits `null`, which is rendered as the "not found" state).
+ *   • `observePaymentsByBond(bond.id)` — reactive child list, sorted
+ *     `payment_date ASC`. Note we pass the WMDB **local id** (`bond.id`)
+ *     here, NOT the `localUuid` — `bond_payments.bond_id` is the WMDB
+ *     id FK (set by the seeder during the two-phase write).
  *
- * TODO (Wave 6-Β):
- *   • Replace `findMockBond` with `useBond(localUuid)` (Zustand selector
- *     wired to WatermelonDB).
- *   • Wire `طباعة` to `printerStore.printBondReceipt(bond)`.
- *   • Wire `حذف` to `bondsRepository.delete(localUuid)` (with confirm dialog).
- *   • Wire `تعديل` to `BondEdit` route (currently exists, points at same
- *     form as BondCreate).
+ * Async loading state: WMDB observables emit `undefined` synchronously
+ * on subscribe in some Hermes builds. We initialize the bond state to
+ * `undefined` to mean "loading", reserve `null` for the resolved
+ * "not found" sentinel, and only render the not-found banner once
+ * we've received at least one emission with a null payload.
  *
- * Wave 6-Α — UI skeleton.
+ * Mutation paths (delete / edit / add-payment) still navigate to the
+ * existing forms which remain on MOCK data. Wave 6-Γ will wire them.
  */
 
-import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  type RouteProp,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Subscription } from 'rxjs';
 import Feather from 'react-native-vector-icons/Feather';
 
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -40,11 +52,27 @@ import {
 } from '@/design-system/components';
 import { useTheme } from '@/design-system/theme';
 import { spacing } from '@/design-system/tokens/spacing';
-import { findBondPayments } from '@/mocks/bondPayments';
-import { findMockBond } from '@/mocks/bonds';
+import type { Bond } from '@/database/models/Bond';
+import type { BondPayment } from '@/database/models/BondPayment';
+import type { Currency } from '@/database/models/Currency';
 import type { MainStackParamList } from '@/navigation/types';
+import {
+  findCurrencyByRemoteId,
+  observeBondByUuid,
+  observePaymentsByBond,
+} from '@/services/repository';
 
 type Route = RouteProp<MainStackParamList, 'BondDetail'>;
+
+/**
+ * Map WMDB `sync_status` to the 3-state union used by the card UI.
+ * pristine + syncing render as "no badge" (synced).
+ */
+function mapSyncStatus(pushStatus: string): 'synced' | 'dirty' | 'failed' {
+  if (pushStatus === 'dirty') return 'dirty';
+  if (pushStatus === 'failed') return 'failed';
+  return 'synced';
+}
 
 export function BondDetailScreen(): React.JSX.Element {
   const { t } = useTranslation();
@@ -53,10 +81,77 @@ export function BondDetailScreen(): React.JSX.Element {
   const navigation =
     useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
-  const bond = findMockBond(route.params.localUuid);
-  const payments = bond ? findBondPayments(bond.localUuid) : [];
+  // undefined = loading, null = resolved not-found, Bond = resolved found
+  const [bond, setBond] = useState<Bond | null | undefined>(undefined);
+  const [payments, setPayments] = useState<BondPayment[]>([]);
+  const [currency, setCurrency] = useState<Currency | null>(null);
 
-  if (!bond) {
+  // ── Bond observable (reactive single-row) ─────────────────────────
+  useEffect(() => {
+    let sub: Subscription | null = null;
+    sub = observeBondByUuid(route.params.localUuid).subscribe({
+      next: (row) => setBond(row),
+      error: () => setBond(null),
+    });
+    return () => {
+      if (sub != null) sub.unsubscribe();
+    };
+  }, [route.params.localUuid]);
+
+  // ── Payments observable (depends on resolved bond.id) ─────────────
+  useEffect(() => {
+    if (bond == null) {
+      setPayments([]);
+      return;
+    }
+    let sub: Subscription | null = null;
+    sub = observePaymentsByBond(bond.id).subscribe({
+      next: (rows) => setPayments(rows),
+      error: () => setPayments([]),
+    });
+    return () => {
+      if (sub != null) sub.unsubscribe();
+    };
+  }, [bond]);
+
+  // ── Currency lookup (one-shot fetch — small table, no need to
+  //     subscribe; symbol almost never changes mid-session) ──────────
+  useEffect(() => {
+    if (bond == null || bond.currencyId == null) {
+      setCurrency(null);
+      return;
+    }
+    let cancelled = false;
+    findCurrencyByRemoteId(bond.currencyId).then(
+      (c) => {
+        if (!cancelled) setCurrency(c);
+      },
+      () => {
+        if (!cancelled) setCurrency(null);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [bond]);
+
+  // ── Loading state ─────────────────────────────────────────────────
+  if (bond === undefined) {
+    return (
+      <SafeAreaView
+        style={[styles.flex, { backgroundColor: colors.background }]}
+        edges={['top']}
+      >
+        <AppHeader title={t('bonds.detail.title')} showBack />
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator color={colors.brandSecondary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Not-found state ───────────────────────────────────────────────
+  if (bond === null) {
     return (
       <SafeAreaView
         style={[styles.flex, { backgroundColor: colors.background }]}
@@ -68,10 +163,15 @@ export function BondDetailScreen(): React.JSX.Element {
     );
   }
 
+  // ── Resolved bond — derive view values ────────────────────────────
   const remaining = bond.amount - bond.amountPaid;
+  const syncStatus = mapSyncStatus(bond.pushStatus);
+  const currencySymbol = currency?.symbol ?? currency?.code ?? '?';
+  const bondDateText = bond.bondDate.toISOString().slice(0, 10);
+  const bondTypeLabel: 'receipt' | 'payment' =
+    bond.bondType === 'payment' ? 'payment' : 'receipt';
 
   const handlePrint = (): void => {
-    // TODO Wave 6-Β: route through printerStore.printBondReceipt(bond)
     Alert.alert(t('bonds.detail.print'), t('bonds.detail.printSoon'));
   };
 
@@ -89,7 +189,7 @@ export function BondDetailScreen(): React.JSX.Element {
           text: t('common.confirm'),
           style: 'destructive',
           onPress: () => {
-            // TODO Wave 6-Β: bondsRepository.delete(bond.localUuid)
+            // TODO Wave 6-Γ: bondsRepository.delete(bond.localUuid)
             navigation.goBack();
           },
         },
@@ -109,7 +209,7 @@ export function BondDetailScreen(): React.JSX.Element {
       <AppHeader title={t('bonds.detail.title')} showBack />
       <MockBanner />
 
-      {bond.syncStatus === 'failed' && bond.lastError ? (
+      {syncStatus === 'failed' && bond.lastError ? (
         <ErrorBanner
           message={bond.lastError}
           variant="error"
@@ -130,7 +230,7 @@ export function BondDetailScreen(): React.JSX.Element {
                 {t('bonds.detail.bondNo', { no: bond.bondNo })}
               </Text>
               <Text style={[styles.date, { color: colors.textTertiary }]}>
-                {bond.bondDate}
+                {bondDateText}
               </Text>
             </View>
             <View
@@ -138,7 +238,7 @@ export function BondDetailScreen(): React.JSX.Element {
                 styles.typePill,
                 {
                   backgroundColor:
-                    bond.bondType === 'receipt'
+                    bondTypeLabel === 'receipt'
                       ? colors.successSoft ?? '#E5F5EB'
                       : colors.dangerSoft ?? '#FDEAEB',
                 },
@@ -149,13 +249,13 @@ export function BondDetailScreen(): React.JSX.Element {
                   styles.typePillText,
                   {
                     color:
-                      bond.bondType === 'receipt'
+                      bondTypeLabel === 'receipt'
                         ? colors.success ?? '#1A7F3D'
                         : colors.danger ?? '#C41E24',
                   },
                 ]}
               >
-                {t(`bonds.types.${bond.bondType}`)}
+                {t(`bonds.types.${bondTypeLabel}`)}
               </Text>
             </View>
           </View>
@@ -164,8 +264,14 @@ export function BondDetailScreen(): React.JSX.Element {
         {/* ACCOUNT CARD */}
         <SectionHeader title={t('bonds.detail.accountSection')} icon="user" />
         <Card>
-          <Row label={t('bonds.detail.accountName')} value={bond.accountName} />
-          <Row label={t('bonds.detail.accountNum')} value={bond.accountNum} />
+          <Row
+            label={t('bonds.detail.accountName')}
+            value={bond.accountName ?? '—'}
+          />
+          <Row
+            label={t('bonds.detail.accountNum')}
+            value={bond.accountId != null ? String(bond.accountId) : '—'}
+          />
         </Card>
 
         {/* AMOUNT CARD */}
@@ -176,17 +282,17 @@ export function BondDetailScreen(): React.JSX.Element {
         <Card>
           <Row
             label={t('bonds.detail.amount')}
-            value={`${bond.amount.toLocaleString('ar-EG')} ${bond.currencySymbol}`}
+            value={`${bond.amount.toLocaleString('ar-EG')} ${currencySymbol}`}
             emphasis
           />
           <Row
             label={t('bonds.detail.amountPaid')}
-            value={`${bond.amountPaid.toLocaleString('ar-EG')} ${bond.currencySymbol}`}
+            value={`${bond.amountPaid.toLocaleString('ar-EG')} ${currencySymbol}`}
           />
           {remaining > 0 ? (
             <Row
               label={t('bonds.detail.remaining')}
-              value={`${remaining.toLocaleString('ar-EG')} ${bond.currencySymbol}`}
+              value={`${remaining.toLocaleString('ar-EG')} ${currencySymbol}`}
               valueColor={colors.warning ?? '#E67E22'}
               emphasis
             />
@@ -233,38 +339,43 @@ export function BondDetailScreen(): React.JSX.Element {
             </View>
           </Card>
         ) : (
-          payments.map((p) => (
-            <Card key={p.localUuid} variant="outlined" style={styles.paymentCard}>
-              <View style={styles.paymentRow}>
-                <Text style={[styles.paymentNo, { color: colors.textSecondary }]}>
-                  #{p.paymentNo}
-                </Text>
-                <View style={styles.paymentBody}>
-                  <Text
-                    style={[styles.paymentAmount, { color: colors.textPrimary }]}
-                  >
-                    {p.amount.toLocaleString('ar-EG')} {bond.currencySymbol}
+          payments.map((p) => {
+            const pSyncStatus = mapSyncStatus(p.pushStatus);
+            const pDate = p.paymentDate.toISOString().slice(0, 10);
+            return (
+              <Card key={p.id} variant="outlined" style={styles.paymentCard}>
+                <View style={styles.paymentRow}>
+                  <Text style={[styles.paymentNo, { color: colors.textSecondary }]}>
+                    #{p.bondNo}
                   </Text>
-                  <Text style={[styles.paymentMeta, { color: colors.textTertiary }]}>
-                    {p.paymentDate} {p.notes ? `· ${p.notes}` : ''}
-                  </Text>
+                  <View style={styles.paymentBody}>
+                    <Text
+                      style={[styles.paymentAmount, { color: colors.textPrimary }]}
+                    >
+                      {p.amount.toLocaleString('ar-EG')} {currencySymbol}
+                    </Text>
+                    <Text style={[styles.paymentMeta, { color: colors.textTertiary }]}>
+                      {pDate}
+                      {p.notes ? ` · ${p.notes}` : ''}
+                    </Text>
+                  </View>
+                  {pSyncStatus !== 'synced' ? (
+                    <View
+                      style={[
+                        styles.syncDot,
+                        {
+                          backgroundColor:
+                            pSyncStatus === 'failed'
+                              ? colors.danger ?? '#C41E24'
+                              : colors.warning ?? '#E67E22',
+                        },
+                      ]}
+                    />
+                  ) : null}
                 </View>
-                {p.syncStatus !== 'synced' ? (
-                  <View
-                    style={[
-                      styles.syncDot,
-                      {
-                        backgroundColor:
-                          p.syncStatus === 'failed'
-                            ? colors.danger ?? '#C41E24'
-                            : colors.warning ?? '#E67E22',
-                      },
-                    ]}
-                  />
-                ) : null}
-              </View>
-            </Card>
-          ))
+              </Card>
+            );
+          })
         )}
       </ScrollView>
 
@@ -381,6 +492,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  loadingWrap: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
   },
   notesText: {
     fontSize: 14,
