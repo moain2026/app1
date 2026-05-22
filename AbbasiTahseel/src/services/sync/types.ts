@@ -130,5 +130,6 @@ export type SyncTriggerReason =
   | 'connectivity' // network came back online
   | 'background_fetch' // OS woke us up
   | 'startup' // app launched
+  | 'after_login' // just successfully authenticated (non-dev-bypass)
   | 'after_write' // user just saved a reading/bond
   | 'periodic'; // in-app timer (foreground)
