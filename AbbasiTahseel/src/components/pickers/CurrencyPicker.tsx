@@ -1,17 +1,22 @@
 /**
  * CurrencyPicker — bottom sheet listing currencies.
  *
- * Wave 6-Α — UI skeleton component (mock data).
+ * Wave 6-Β — wired to `observeCurrencies()`. The currencies table is
+ * small (3-5 rows in practice), so we render straight through a
+ * mapped View instead of FlashList — no scroll perf concern.
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Subscription } from 'rxjs';
 import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/design-system/theme';
 import { spacing } from '@/design-system/tokens/spacing';
-import { MOCK_CURRENCIES, type MockCurrency } from '@/mocks/currencies';
+import type { MockCurrency } from '@/mocks/currencies';
+import { observeCurrencies } from '@/services/repository/currenciesRepository';
+import { toMockCurrencies } from '@/services/repository/viewModels';
 
 import { PickerSheet } from './PickerSheet';
 
@@ -25,17 +30,32 @@ export function CurrencyPicker(props: CurrencyPickerProps): React.JSX.Element {
   const { visible, onClose, onSelect } = props;
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const [currencies, setCurrencies] = useState<MockCurrency[]>([]);
+
+  useEffect(() => {
+    if (!visible) {
+      return;
+    }
+    let sub: Subscription | null = null;
+    sub = observeCurrencies().subscribe({
+      next: (rows) => setCurrencies(toMockCurrencies(rows)),
+      error: () => setCurrencies([]),
+    });
+    return () => {
+      if (sub != null) sub.unsubscribe();
+    };
+  }, [visible]);
 
   return (
     <PickerSheet
       visible={visible}
       onClose={onClose}
       title={t('pickers.currency.title')}
-      subtitle={t('pickers.currency.subtitle', { count: MOCK_CURRENCIES.length })}
+      subtitle={t('pickers.currency.subtitle', { count: currencies.length })}
       heightPercent={50}
     >
       <View style={styles.list}>
-        {MOCK_CURRENCIES.map((c) => (
+        {currencies.map((c) => (
           <Pressable
             key={c.id}
             onPress={() => onSelect(c)}
@@ -49,18 +69,33 @@ export function CurrencyPicker(props: CurrencyPickerProps): React.JSX.Element {
               },
             ]}
           >
-            <View style={[styles.symbolBox, { backgroundColor: colors.surfaceElevated ?? colors.surface }]}>
-              <Text style={[styles.symbol, { color: colors.textPrimary }]}>{c.symbol}</Text>
+            <View
+              style={[
+                styles.symbolBox,
+                {
+                  backgroundColor: colors.surfaceElevated ?? colors.surface,
+                },
+              ]}
+            >
+              <Text style={[styles.symbol, { color: colors.textPrimary }]}>
+                {c.symbol}
+              </Text>
             </View>
             <View style={styles.body}>
-              <Text style={[styles.name, { color: colors.textPrimary }]}>{c.name}</Text>
+              <Text style={[styles.name, { color: colors.textPrimary }]}>
+                {c.name}
+              </Text>
               <Text style={[styles.meta, { color: colors.textTertiary }]}>
                 {c.isBase
                   ? t('pickers.currency.base')
                   : t('pickers.currency.rate', { rate: c.rate })}
               </Text>
             </View>
-            <Feather name="chevron-left" size={16} color={colors.textTertiary} />
+            <Feather
+              name="chevron-left"
+              size={16}
+              color={colors.textTertiary}
+            />
           </Pressable>
         ))}
       </View>

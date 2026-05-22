@@ -1,8 +1,19 @@
 /**
  * AccountPicker — bottom sheet listing subscribers (مشتركين), searchable.
  *
- * Mock-only data source in Wave 6-Α.
+ * Wave 6-Β — wired to WatermelonDB:
+ *   • The list is fed by `observeAccounts(filters)` so any sync, manual
+ *     edit, or dev-bypass reseed reflects in real-time.
+ *   • The picker still emits a `MockAccount` (via `toMockAccount`) so
+ *     calling screens (BondFormScreen, BondPaymentFormScreen) do not
+ *     have to change their state types.
  *
+ * Search runs as a SQL LIKE on the columns `name | name_en | code`.
+ * Place filtering (`placeId` prop) is applied client-side because the
+ * `accounts` table does not yet carry a place FK — Wave 6-Γ will move
+ * this filter into the query once `accounts.tblh_id` exists.
+ *
+ * Usage:
  *   const [showPicker, setShowPicker] = useState(false);
  *   const [accountId, setAccountId] = useState<number | null>(null);
  *   ...
@@ -11,20 +22,21 @@
  *     onClose={() => setShowPicker(false)}
  *     onSelect={(acct) => { setAccountId(acct.id); setShowPicker(false); }}
  *   />
- *
- * Wave 6-Α — UI skeleton component.
  */
 
 import { FlashList } from '@shopify/flash-list';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Subscription } from 'rxjs';
 import Feather from 'react-native-vector-icons/Feather';
 
 import { EmptyState, SearchBar } from '@/design-system/components';
 import { useTheme } from '@/design-system/theme';
 import { spacing } from '@/design-system/tokens/spacing';
-import { MOCK_ACCOUNTS, type MockAccount } from '@/mocks/accounts';
+import type { MockAccount } from '@/mocks/accounts';
+import { observeAccounts } from '@/services/repository/accountsRepository';
+import { toMockAccounts } from '@/services/repository/viewModels';
 
 import { PickerSheet } from './PickerSheet';
 
@@ -43,22 +55,45 @@ export function AccountPicker(props: AccountPickerProps): React.JSX.Element {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const [query, setQuery] = useState('');
+  const [accounts, setAccounts] = useState<MockAccount[]>([]);
 
+  // Subscribe to the live `accounts` collection while the sheet is
+  // visible. Unsubscribe on close to avoid keeping a hot RxJS chain
+  // alive for a hidden component.
+  useEffect(() => {
+    if (!visible) {
+      return;
+    }
+    let sub: Subscription | null = null;
+    sub = observeAccounts({ searchQuery: query }).subscribe({
+      next: (rows) => {
+        setAccounts(toMockAccounts(rows));
+      },
+      error: () => {
+        // Repository errors are non-fatal at the UI layer — leave the
+        // previous list visible and let the user retry by closing /
+        // re-opening the sheet.
+        setAccounts([]);
+      },
+    });
+    return () => {
+      if (sub != null) {
+        sub.unsubscribe();
+      }
+    };
+  }, [visible, query]);
+
+  // Place + active filters applied client-side. See file header.
   const filtered = useMemo(() => {
-    let list = MOCK_ACCOUNTS;
-    if (activeOnly) list = list.filter((a) => a.active);
-    if (placeId != null) list = list.filter((a) => a.placeId === placeId);
-    const q = query.trim().toLowerCase();
-    if (q) {
-      list = list.filter(
-        (a) =>
-          a.name.toLowerCase().includes(q) ||
-          a.num.toLowerCase().includes(q) ||
-          (a.nameT?.toLowerCase().includes(q) ?? false),
-      );
+    let list = accounts;
+    if (activeOnly) {
+      list = list.filter((a) => a.active);
+    }
+    if (placeId != null) {
+      list = list.filter((a) => a.placeId === placeId);
     }
     return list;
-  }, [query, placeId, activeOnly]);
+  }, [accounts, placeId, activeOnly]);
 
   return (
     <PickerSheet

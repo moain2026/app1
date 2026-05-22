@@ -12,18 +12,29 @@
  *
  * Wave 6-Α — UI skeleton (data from getReadingsByAccount()).
  *
- * TODO Wave 6-Β:
- *   • Replace mock data with WatermelonDB query joined on a Reading model.
+ * Wave 6-Β — partial wire to WatermelonDB:
+ *   • Subscriber lookup (`account`) now subscribes to
+ *     `observeAccountByCode(num)` so any sync/seed update reflects live.
+ *   • The historical readings table (`history`) remains on the static
+ *     MOCK fixture because Wave 6-Β does NOT introduce a monthly-rollup
+ *     aggregation table — the live `readings` collection holds one row
+ *     per (account, month) but lacks the cas/asts columns needed for
+ *     this view. Wave 6-Γ will replace it with a real query joined on
+ *     the rollup table once the WCF aggregation endpoint is finalized.
+ *
+ * TODO Wave 6-Γ:
+ *   • Replace `getReadingsByAccount` with a WatermelonDB rollup query.
  *   • Render a real consumption line chart.
  *   • Wire print action to PrinterService.printConsumptionHistory().
  *   • Add date-range filter.
  */
 
 import { useRoute, type RouteProp } from '@react-navigation/native';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Subscription } from 'rxjs';
 import Feather from 'react-native-vector-icons/Feather';
 
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -36,8 +47,12 @@ import {
 } from '@/design-system/components';
 import { useTheme } from '@/design-system/theme';
 import { spacing } from '@/design-system/tokens/spacing';
-import { findMockAccountByNum, getReadingsByAccount } from '@/mocks';
+import type { Account } from '@/database/models/Account';
+import { getReadingsByAccount } from '@/mocks';
+import type { MockAccount } from '@/mocks/accounts';
 import type { MainStackParamList } from '@/navigation/types';
+import { observeAccountByCode } from '@/services/repository';
+import { toMockAccount } from '@/services/repository/viewModels';
 
 export function ReadingsHistoryScreen(): React.JSX.Element {
   const { t } = useTranslation();
@@ -45,11 +60,43 @@ export function ReadingsHistoryScreen(): React.JSX.Element {
   const route = useRoute<RouteProp<MainStackParamList, 'ReadingsHistory'>>();
   const num = route.params?.num ?? '0001';
 
-  const account = useMemo(() => findMockAccountByNum(num), [num]);
+  // undefined = loading, null = resolved not-found, MockAccount = resolved.
+  const [account, setAccount] = useState<MockAccount | null | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
+    let sub: Subscription | null = null;
+    sub = observeAccountByCode(num).subscribe({
+      next: (row: Account | null) => {
+        setAccount(row != null ? toMockAccount(row) : null);
+      },
+      error: () => setAccount(null),
+    });
+    return () => {
+      if (sub != null) sub.unsubscribe();
+    };
+  }, [num]);
+
+  // Reading history stays on the MOCK fixture for Wave 6-Β — see file
+  // header for rationale + Wave 6-Γ TODO.
   const history = useMemo(() => getReadingsByAccount(num), [num]);
 
+  // ─── Loading (waiting on first DB emission) ──────────────────
+  if (account === undefined) {
+    return (
+      <SafeAreaView
+        style={[styles.flex, { backgroundColor: colors.background }]}
+        edges={['top']}
+      >
+        <AppHeader title={t('readings.history.title')} showBack />
+        <MockBanner />
+      </SafeAreaView>
+    );
+  }
+
   // ─── Empty (subscriber not found) ────────────────────────────
-  if (!account) {
+  if (account === null) {
     return (
       <SafeAreaView
         style={[styles.flex, { backgroundColor: colors.background }]}

@@ -1,18 +1,27 @@
 /**
  * PlacePicker — bottom sheet listing areas (مناطق).
  *
- * Wave 6-Α — UI skeleton component (mock data).
+ * Wave 6-Β — wired to WatermelonDB via `observePlaces()`. The picker
+ * keeps its `MockPlace` callback contract for backward compatibility
+ * with calling screens; the VM layer (`toMockPlaces`) does the shape
+ * adaptation.
+ *
+ * The "all places" pseudo-row is constructed in-component as before
+ * (subscriberCount summed across live rows).
  */
 
 import { FlashList } from '@shopify/flash-list';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Subscription } from 'rxjs';
 import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/design-system/theme';
 import { spacing } from '@/design-system/tokens/spacing';
-import { MOCK_PLACES, type MockPlace } from '@/mocks/places';
+import type { MockPlace } from '@/mocks/places';
+import { observePlaces } from '@/services/repository/placesRepository';
+import { toMockPlaces } from '@/services/repository/viewModels';
 
 import { PickerSheet } from './PickerSheet';
 
@@ -24,22 +33,45 @@ export interface PlacePickerProps {
   allowAll?: boolean;
 }
 
+type Row = MockPlace | { id: 0; name: string; subscriberCount: number };
+
 export function PlacePicker(props: PlacePickerProps): React.JSX.Element {
   const { visible, onClose, onSelect, allowAll = true } = props;
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const [places, setPlaces] = useState<MockPlace[]>([]);
 
-  type Row = MockPlace | { id: 0; name: string; subscriberCount: number };
+  useEffect(() => {
+    if (!visible) {
+      return;
+    }
+    let sub: Subscription | null = null;
+    sub = observePlaces().subscribe({
+      next: (rows) => setPlaces(toMockPlaces(rows)),
+      error: () => setPlaces([]),
+    });
+    return () => {
+      if (sub != null) sub.unsubscribe();
+    };
+  }, [visible]);
+
   const data: Row[] = allowAll
-    ? [{ id: 0, name: t('pickers.place.allOption'), subscriberCount: MOCK_PLACES.reduce((s, p) => s + p.subscriberCount, 0) }, ...MOCK_PLACES]
-    : MOCK_PLACES;
+    ? [
+        {
+          id: 0,
+          name: t('pickers.place.allOption'),
+          subscriberCount: places.reduce((s, p) => s + p.subscriberCount, 0),
+        },
+        ...places,
+      ]
+    : places;
 
   return (
     <PickerSheet
       visible={visible}
       onClose={onClose}
       title={t('pickers.place.title')}
-      subtitle={t('pickers.place.subtitle', { count: MOCK_PLACES.length })}
+      subtitle={t('pickers.place.subtitle', { count: places.length })}
     >
       <FlashList<Row>
         data={data}
@@ -59,11 +91,16 @@ export function PlacePicker(props: PlacePickerProps): React.JSX.Element {
             ]}
           >
             <View style={styles.body}>
-              <Text style={[styles.name, { color: colors.textPrimary }]} numberOfLines={1}>
+              <Text
+                style={[styles.name, { color: colors.textPrimary }]}
+                numberOfLines={1}
+              >
                 {item.name}
               </Text>
               <Text style={[styles.meta, { color: colors.textTertiary }]}>
-                {t('pickers.place.subscriberCount', { count: item.subscriberCount })}
+                {t('pickers.place.subscriberCount', {
+                  count: item.subscriberCount,
+                })}
               </Text>
             </View>
             <Feather name="chevron-left" size={16} color={colors.textTertiary} />

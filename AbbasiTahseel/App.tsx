@@ -21,7 +21,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from './src/design-system/theme';
 import { initI18n } from './src/i18n';
 import { RootNavigator } from './src/navigation/RootNavigator';
-import { seedMockDataIfDevBypass } from './src/services/mock/seedMockData';
+import { runMigrationHooks } from './src/database/migrationRunner';
+import { seedAllIfDevBypass } from './src/services/mock/seedAll';
 import { useAuthStore } from './src/stores/authStore';
 import { useSyncStore } from './src/stores/syncStore';
 
@@ -43,6 +44,18 @@ function App(): React.JSX.Element | null {
       } catch {
         // i18n is best-effort; bundled fallback covers us.
       }
+      // Run data-level migration hooks AFTER WMDB has settled (which
+      // happens implicitly on the first collection access) but BEFORE
+      // any screen mounts. Wave 6-Β registers no hooks yet — see
+      // `migrationRunner.ts` — so this is currently a near-no-op but
+      // the call site is wired in advance to avoid retrofitting later.
+      try {
+        await runMigrationHooks();
+      } catch {
+        // The runner already swallows individual-hook failures; an outer
+        // throw here would only come from a bug in the runner itself.
+        // Failing-open is the documented policy.
+      }
       try {
         await useSyncStore.getState().init();
       } catch {
@@ -57,17 +70,18 @@ function App(): React.JSX.Element | null {
     void bootstrap();
 
     // Subscribe to auth state — every time the session flips into Dev
-    // Bypass mode, ensure the mock readings are seeded. The seeder is
-    // idempotent + gated on isDevBypass, so this is safe to call eagerly.
+    // Bypass mode, ensure ALL mock entities are seeded (readings, bonds,
+    // accounts, places, currencies). The seeders are idempotent + gated
+    // on isDevBypass, so this is safe to call eagerly.
     const unsubscribeAuth = useAuthStore.subscribe((state, prevState) => {
       if (state.isDevBypass && !prevState.isDevBypass) {
-        void seedMockDataIfDevBypass();
+        void seedAllIfDevBypass();
       }
     });
 
     // Also try once on cold start (covers the loadFromStorage rehydrate
     // path where the bypass session was already active from a previous run).
-    void seedMockDataIfDevBypass();
+    void seedAllIfDevBypass();
 
     return () => {
       cancelled = true;
