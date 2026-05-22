@@ -55,9 +55,9 @@ import type { MainStackParamList } from '@/navigation/types';
 import {
   applyNumericBondNoFilter,
   observeAccounts,
+  observeBondStats,
   observeBonds,
   observeCurrencies,
-  observeStats,
   type BondsStats,
 } from '@/services/repository';
 import {
@@ -112,7 +112,7 @@ export function BondsListScreen(): React.JSX.Element {
   // search/filter so the badges always reflect global totals).
   useEffect(() => {
     let sub: Subscription | null = null;
-    sub = observeStats().subscribe({
+    sub = observeBondStats().subscribe({
       next: (next) => setStats(next),
       error: () => setStats(EMPTY_STATS),
     });

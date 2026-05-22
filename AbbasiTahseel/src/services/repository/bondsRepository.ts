@@ -178,7 +178,7 @@ export function observeBondByUuid(
  * so the chip badges always reflect global totals regardless of what the
  * user typed into the search box.
  */
-export async function getStats(): Promise<BondsStats> {
+export async function getBondStats(): Promise<BondsStats> {
   const collection = database.collections.get<Bond>('bonds');
   const [total, receipt, payment, synced, dirty, failed] = await Promise.all([
     collection.query().fetchCount(),
@@ -197,7 +197,7 @@ export async function getStats(): Promise<BondsStats> {
  * one-shot fetch on each tick rather than a long-running aggregation
  * because the bonds collection is small (<10k rows realistically).
  */
-export function observeStats(): Observable<BondsStats> {
+export function observeBondStats(): Observable<BondsStats> {
   return database.collections
     .get<Bond>('bonds')
     .query()
