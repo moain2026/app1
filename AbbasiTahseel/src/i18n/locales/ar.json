@@ -14,6 +14,14 @@
     "copied": "تم النسخ",
     "show": "إظهار",
     "hide": "إخفاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "add": "إضافة",
+    "search": "بحث",
+    "close": "إغلاق",
+    "yes": "نعم",
+    "no": "لا",
+    "noResults": "لا توجد نتائج",
     "devModeBanner": "⚠️ وضع التطوير — بيانات تجريبية"
   },
   "auth": {
@@ -364,6 +372,326 @@
         "lastError": "آخر خطأ: {{message}}",
         "never": "لم يتم الرفع بعد"
       }
+    },
+    "history": {
+      "title": "سجلّ قراءات المشترك",
+      "notFoundTitle": "المشترك غير موجود",
+      "notFoundSubtitle": "تحقق من رقم العداد ثم حاول مرة أخرى.",
+      "place": "المنطقة",
+      "avg": "المتوسط",
+      "max": "الأعلى",
+      "min": "الأدنى",
+      "chartPlaceholder": "رسم الاستهلاك سيظهر هنا — المرحلة B",
+      "tableTitle": "آخر القراءات",
+      "col": {
+        "date": "التاريخ",
+        "previous": "السابقة",
+        "current": "الحالية",
+        "consumption": "الاستهلاك",
+        "avg": "المتوسط"
+      }
+    },
+    "bulk": {
+      "title": "إدخال قراءات بالجملة",
+      "section": "مشتركون في انتظار القراءة",
+      "placeFilter": "المنطقة",
+      "allPlaces": "كل المناطق",
+      "previous": "السابقة",
+      "placeholder": "القراءة",
+      "emptyTitle": "لا توجد قراءات معلّقة",
+      "emptySubtitle": "كل المشتركين في هذه المنطقة تم إدخال قراءاتهم.",
+      "draftCount": "{{count}} قراءة جديدة",
+      "saveAll": "حفظ الكل"
     }
+  },
+  "bonds": {
+    "types": {
+      "receipt": "قبض",
+      "payment": "صرف"
+    },
+    "list": {
+      "title": "السندات",
+      "searchPlaceholder": "بحث برقم السند أو اسم المشترك...",
+      "filterAll": "الكل",
+      "accountNum": "حساب",
+      "partial": "دفعة جزئية",
+      "emptyTitle": "لا توجد سندات",
+      "emptySubtitle": "ابدأ بإنشاء سند قبض أو صرف جديد.",
+      "emptySearchTitle": "لا نتائج",
+      "emptySearchSubtitle": "جرّب بحثاً مختلفاً أو امسح الفلاتر.",
+      "createCta": "سند جديد"
+    },
+    "detail": {
+      "title": "تفاصيل السند",
+      "bondNo": "سند رقم #{{number}}",
+      "accountSection": "بيانات المشترك",
+      "accountName": "الاسم",
+      "accountNum": "رقم الحساب",
+      "amountSection": "المبلغ",
+      "amount": "إجمالي السند",
+      "amountPaid": "المدفوع",
+      "remaining": "المتبقي",
+      "notesSection": "ملاحظات",
+      "paymentsSection": "الدفعات",
+      "addPayment": "إضافة دفعة",
+      "paymentsEmpty": "لا توجد دفعات جزئية لهذا السند.",
+      "notFound": "السند غير موجود",
+      "print": "🖨️ طباعة",
+      "printSoon": "خاصية الطباعة قريباً (Wave 6-Β)",
+      "deleteConfirmTitle": "حذف السند؟",
+      "deleteConfirmMsg": "سيتم حذف السند #{{number}} نهائياً. لا يمكن التراجع."
+    },
+    "form": {
+      "createTitle": "سند جديد",
+      "editTitle": "تعديل سند",
+      "typeSection": "نوع السند",
+      "accountSection": "المشترك",
+      "accountLabel": "الحساب",
+      "accountPlaceholder": "اختر مشتركاً",
+      "currentBalance": "الرصيد الحالي",
+      "balanceDebtor": "مدين",
+      "balanceCreditor": "دائن",
+      "amountSection": "المبلغ",
+      "currencyLabel": "العملة",
+      "currencyPlaceholder": "اختر العملة",
+      "amountLabel": "القيمة",
+      "amountPlaceholder": "0",
+      "notesSection": "ملاحظات",
+      "notesLabel": "ملاحظات (اختياري)",
+      "notesPlaceholder": "اكتب أي ملاحظة هنا...",
+      "createCta": "حفظ السند",
+      "editCta": "حفظ التعديل",
+      "validationTitle": "بيانات ناقصة",
+      "validationMsg": "تأكد من اختيار المشترك والعملة وإدخال مبلغ صحيح.",
+      "savedTitle": "تم الحفظ",
+      "savedCreate": "تم إنشاء سند جديد (تجريبي).",
+      "savedEdit": "تم حفظ التعديلات (تجريبي)."
+    },
+    "payments": {
+      "formTitle": "إضافة دفعة جزئية",
+      "bondSummary": "ملخّص السند",
+      "amountSection": "قيمة الدفعة",
+      "amountLabel": "المبلغ",
+      "amountHint": "لا يتجاوز المتبقي ({{remaining}})",
+      "notesSection": "ملاحظات",
+      "notesLabel": "ملاحظات (اختياري)",
+      "notesPlaceholder": "مثال: دفعة نقدية من المحل",
+      "saveCta": "حفظ الدفعة",
+      "invalidTitle": "قيمة غير صحيحة",
+      "invalidMsg": "أدخل مبلغاً موجباً.",
+      "overTitle": "تجاوز المتبقي",
+      "overMsg": "المبلغ المُدخل أكبر من المتبقي على السند.",
+      "savedTitle": "تم الحفظ",
+      "savedMsg": "تم تسجيل الدفعة (تجريبي)."
+    }
+  },
+  "pickers": {
+    "account": {
+      "title": "اختر مشتركاً",
+      "subtitle": "ابحث بالاسم أو رقم الحساب",
+      "searchPlaceholder": "بحث...",
+      "emptyTitle": "لا توجد نتائج",
+      "emptySubtitle": "جرّب كلمات بحث مختلفة."
+    },
+    "place": {
+      "title": "اختر المنطقة",
+      "subtitle": "المناطق المتاحة",
+      "allOption": "كل المناطق",
+      "subscriberCount": "{{count}} مشترك"
+    },
+    "currency": {
+      "title": "اختر العملة",
+      "subtitle": "العملات المتاحة",
+      "base": "العملة الأساسية",
+      "rate": "1 = {{rate}}"
+    },
+    "period": {
+      "title": "اختر الفترة",
+      "presets": {
+        "today": "اليوم",
+        "yesterday": "أمس",
+        "thisWeek": "هذا الأسبوع",
+        "thisMonth": "هذا الشهر",
+        "last30Days": "آخر 30 يوماً",
+        "custom": "تاريخ مخصص"
+      }
+    }
+  },
+  "reports": {
+    "hub": {
+      "title": "التقارير",
+      "subtitle": "اختر تقريراً لعرضه أو طباعته."
+    },
+    "actions": {
+      "exportPdf": "تصدير PDF",
+      "print": "🖨️ طباعة"
+    },
+    "kpi": {
+      "accounts": "عدد الحسابات",
+      "totalBalance": "الإجمالي",
+      "currentBalance": "الرصيد الحالي",
+      "totalReceipts": "إجمالي القبض",
+      "totalPayments": "إجمالي الصرف",
+      "bondCount": "سند",
+      "netMovement": "صافي الحركة",
+      "daysCovered": "يوم",
+      "date": "التاريخ",
+      "totalExpenses": "إجمالي المصروفات",
+      "totalSubscribers": "إجمالي المشتركين",
+      "progress": "نسبة الإنجاز",
+      "totalConsumption": "إجمالي الاستهلاك",
+      "kwhUnit": "ك.و.س",
+      "pending": "المعلّقة"
+    },
+    "fields": {
+      "account": "الحساب"
+    },
+    "columns": {
+      "accountNum": "رقم الحساب",
+      "accountName": "الاسم",
+      "place": "المنطقة",
+      "balance": "الرصيد",
+      "date": "التاريخ",
+      "docNo": "رقم المستند",
+      "description": "البيان",
+      "debit": "مدين",
+      "credit": "دائن",
+      "bondNo": "رقم السند",
+      "type": "النوع",
+      "amount": "المبلغ",
+      "receipts": "القبض",
+      "payments": "الصرف",
+      "net": "الصافي",
+      "category": "البند",
+      "group": "المجموعة",
+      "total": "العدد",
+      "posted": "مرحّلة",
+      "pending": "معلّقة",
+      "consumption": "الاستهلاك"
+    },
+    "hints": {
+      "tapDate": "اضغط على التاريخ لعرض التفاصيل."
+    },
+    "entries": {
+      "BalanceHeaderReport": {
+        "title": "ميزان عام",
+        "subtitle": "الرصيد الحالي لكل المشتركين."
+      },
+      "BalanceDetailsReport": {
+        "title": "كشف حساب تفصيلي",
+        "subtitle": "حركات حساب مشترك واحد في فترة محددة."
+      },
+      "BondsHeaderReport": {
+        "title": "تقرير السندات",
+        "subtitle": "كل سندات القبض والصرف في الفترة."
+      },
+      "BoxMoveReport": {
+        "title": "حركة الصندوق",
+        "subtitle": "الإيرادات والمصروفات اليومية."
+      },
+      "BoxMoveDetailsReport": {
+        "title": "تفاصيل حركة الصندوق",
+        "subtitle": "تفاصيل كل سند في يوم محدد."
+      },
+      "ExpensesReport": {
+        "title": "المصروفات اليومية",
+        "subtitle": "بنود المصروفات حسب التاريخ."
+      },
+      "ReadingHeaderReport": {
+        "title": "تقرير الاستهلاك",
+        "subtitle": "ملخص قراءات كل منطقة ومجموعة."
+      }
+    }
+  },
+  "settings": {
+    "hub": {
+      "title": "الإعدادات",
+      "subtitle": "اضبط معلومات الشركة، الطابعة، الاتصال والصلاحيات.",
+      "sectionGeneral": "إعدادات عامة",
+      "version": "إصدار التطبيق: {{version}}"
+    },
+    "entries": {
+      "CompanyInfo": {
+        "title": "بيانات الشركة",
+        "subtitle": "ما يظهر في رأس الإيصال المطبوع."
+      },
+      "PrinterSettings": {
+        "title": "إعدادات الطابعة",
+        "subtitle": "اقتران الطابعة المحمولة واختبار الطباعة."
+      },
+      "ServerSettings": {
+        "title": "إعدادات الاتصال",
+        "subtitle": "عنوان الخادم والبورت والفرع."
+      },
+      "Permissions": {
+        "title": "صلاحيات التطبيق",
+        "subtitle": "إدارة صلاحيات الكاميرا والبلوتوث والموقع."
+      },
+      "About": {
+        "title": "حول التطبيق",
+        "subtitle": "الإصدار والترخيص والاعتمادات."
+      }
+    },
+    "permissions": {
+      "title": "الصلاحيات",
+      "subtitle": "إدارة الصلاحيات التي يستخدمها التطبيق.",
+      "runtimeSection": "صلاحيات النظام",
+      "request": "طلب الصلاحية",
+      "openSettings": "فتح إعدادات النظام",
+      "helpTitle": "متى أحتاج هذه الصلاحيات؟",
+      "helpBody": "الكاميرا لمسح أرقام العدّادات، البلوتوث للاتصال بالطابعة المحمولة، والموقع لتحديد منطقة الجباية. لا نشارك أي بيانات خارج التطبيق.",
+      "status": {
+        "granted": "ممنوحة",
+        "denied": "مرفوضة",
+        "blocked": "محجوبة"
+      },
+      "camera": {
+        "title": "الكاميرا",
+        "desc": "لمسح أرقام العدّادات والباركود."
+      },
+      "bluetooth": {
+        "title": "البلوتوث",
+        "desc": "للاتصال بالطابعة المحمولة Datecs DPP-250."
+      },
+      "location": {
+        "title": "الموقع",
+        "desc": "لاكتشاف الأجهزة عبر البلوتوث على بعض إصدارات أندرويد."
+      },
+      "storage": {
+        "title": "التخزين",
+        "desc": "لحفظ نسخ احتياطية وتقارير PDF."
+      },
+      "phone": {
+        "title": "الهاتف",
+        "desc": "لاتصال الدعم الفني عند الحاجة."
+      }
+    }
+  },
+  "about": {
+    "title": "حول التطبيق",
+    "tagline": "تطبيق تحصيل اشتراكات الكهرباء — شركة العباسي.",
+    "licenseSection": "الترخيص",
+    "appSection": "بيانات التطبيق",
+    "creditsSection": "مكتبات مُستخدمة",
+    "contactSection": "تواصل معنا",
+    "licensee": "المرخّص له",
+    "branch": "الفرع",
+    "deviceId": "معرف الجهاز",
+    "releaseDate": "تاريخ الإصدار",
+    "packageName": "اسم الحزمة",
+    "supportPhone": "+967 000 000 000",
+    "copyright": "© {{year}} العباسي لتوليد الكهرباء التجارية"
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "accountSection": "بيانات الحساب",
+    "actionsSection": "إجراءات",
+    "username": "اسم المستخدم",
+    "branch": "الفرع",
+    "lastLogin": "آخر تسجيل دخول",
+    "changePassword": "تغيير كلمة المرور",
+    "changePin": "تغيير رمز PIN",
+    "logout": "تسجيل الخروج",
+    "actionsHint": "ستُفعّل هذه الإجراءات في المرحلة B."
   }
 }
