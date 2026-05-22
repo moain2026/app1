@@ -1,34 +1,66 @@
-# COMMIT_HISTORY — Last 12 Commits (newest first)
+# COMMIT_HISTORY — Decoded Recent Commits
 
-> Generated from `git log --oneline -12` on the active branch
-> `feat/wave-5-printer-scanner`.
+> Most-recent first. Run `git log --oneline -20` for the live view.
 
-| Hash | Subject | What |
-|------|---------|------|
-| `07c3fdc` | `docs(playbook): Wave 5 section + ADR-015..018 + backlog update` | `PROJECT_PLAYBOOK.md`. Adds Wave 5 history bullet (Sections A–H), 4 new ADRs, refreshed Section 1, refreshed tech stack, refreshed backlog. |
-| `ebb4440` | `feat(readings): red FAB → Scanner route` | `src/screens/main/ReadingsScreen.tsx`. 56dp danger-colored FAB with `Feather maximize` icon, navigates to `Scanner` with `{ returnTo: 'Readings' }`. NavLike overload added. |
-| `127f6b0` | `feat(nav): wire PrinterSettings + CompanyInfo + Scanner routes` | `src/navigation/{types,MainStack,DrawerContent}.tsx` + 2 new stub screens. PrinterSettings + CompanyInfo appended to MENU_ITEMS; live status dot subscribed to `usePrinterStore`. |
-| `2260331` | `chore(android): refine bluetooth + camera permissions for API 31+` | `AndroidManifest.xml`. CAMERA + features (required=false), `tools:targetApi="s"` + `neverForLocation` on BLUETOOTH_SCAN, `maxSdkVersion="30"` on legacy BT perms. |
-| `831a96a` | `feat(printer): print button on ReadingDetailScreen` | `ReadingDetailScreen.tsx`. Print button below Save; disabled when `kh == null \|\| !isConnected \|\| isPrinting`. Composes ReadingReceiptInput from current reading + authStore user + i18n company name. |
-| `b16f0d2` | `feat(printer): PrinterSettingsScreen — discovery + pair + test print` | Full screen: status card, scan card with device list, test print card, error banner. `ar.json` merged with `printer.*`/`scanner.*`/`company.*` keys. |
-| `2169653` | `feat(printer): usePrinter hook — store + manager wrapper` | `src/hooks/usePrinter.ts` + barrel. Thin wrapper calling `syncFromManager()` on mount + useCallback-wrapped store actions. |
-| `c51ff5b` | `docs(context): agent handoff system — 10 context files for seamless resumption` | `AGENT_CONTEXT/` folder: README, CURRENT_STATE, PROJECT_MAP, CODING_RULES, WAVE_5_PLAN, KEY_PATHS, KNOWN_ISSUES, COMMIT_HISTORY, PREPARED_ASSETS_GUIDE, HANDOFF_PROTOCOL. |
-| `6c8423d` | `feat(printer): Zustand printerStore + ESC/POS test page` | `src/stores/printerStore.ts` + `src/services/printer/testPage.ts` + barrel update. Store owns scan/pair/print UI state, subscribes to PrinterManager events. |
-| `6e4e63a` | `feat(printer): receipt builders — reading + bond + daily summary` | `src/services/printer/receiptBuilders/{buildReadingReceipt,buildBondReceipt,buildDailySummary,index}.ts`. Multi-currency bond totals; per-area top-8 daily summary; verification barcode `B-<num>-<hash6>`. |
-| `76b678d` | `feat(printer): cp1256 encoder + ESC/POS builder + PrinterManager singleton` | 3 files: encoder/shaper, ESC/POS primitives, BT Classic wrapper. Added `react-native-bluetooth-classic` + `buffer` deps. Added `prepared-assets/` to `.gitignore`. |
-| `3d9b1bf` | `docs(playbook): record Wave 4 CI APK build (46.93 MB)` | Just a playbook entry — no code change. Last commit on `main` before Wave 5 branched off. |
+## fix/wcf-authenticate-endpoint branch (PR #26 — open)
 
-## Branch ahead-of-main delta
+- **`8c0c48b`** `fix(auth): switch to /Authenticate (WCF) with /Login fallback`
+  Two-stage login flow. STAGE 1 calls `/Authenticate` with the official
+  WCF contract `{ User, Password, appId }` (Capital U/P, camelCase appId)
+  and expects a JSON string literal response. STAGE 2 falls back to the
+  legacy `/Login` with `{ username, password, appId, secureId }` and the
+  Users-object response shape. On STAGE 2 failure, STAGE 1's raw body is
+  prepended to the diagnostic surface so the operator can copy BOTH
+  attempts from the LoginScreen error box.
 
-11 Wave-5 commits (`76b678d` through `07c3fdc`) are NOT yet on `main` —
-they live only on `feat/wave-5-printer-scanner` and are bundled in
-**PR #23** (https://github.com/moain2026/app1/pull/23).
+## main branch — Wave 5 line
 
-## How to regenerate this file
+- **`3ba68ac`** `Prep/wave 5 7 assets (#24)`
+  Moves the bulk-loaded reference material (printer SDK docs, cp1256
+  maps, mock JSON for waves 6/7, ProGuard rules, keystore docs) into
+  `prepared-assets/` and adds it to `.gitignore`.
 
-```bash
-cd /home/user/webapp/AbbasiTahseel && git log --oneline -12
-```
+- **`5ead240`** `feat: Wave 5 — Printer (Datecs DPP-250) + Scanner + Company Info (#23)`
+  Squash-merge of the whole Wave 5 train (printer module, ESC/POS
+  builder, cp1256 encoder + Arabic shaper, PrinterManager singleton,
+  printerStore, PrinterSettingsScreen, receipt builders, drawer status
+  dot, FAB on ReadingsScreen, stubs for Scanner and CompanyInfo).
 
-Then rewrite this table. The "What" column comes from reading each commit's
-message + diff stat.
+## main branch — Wave 4 line
+
+- **`3d9b1bf`** `docs(playbook): record Wave 4 CI APK build (46.93 MB)`
+  Updates PROJECT_PLAYBOOK.md §11 with the Wave 4 APK build telemetry.
+
+- **`8da6f7a`** `feat: Wave 4 — Readings Module + Dev Bypass Mode (#22)`
+  Reactive readings list via WatermelonDB observe + `useReadingsStore`
+  for filters/sort. Dev bypass path (`dev`/`0000`) seeds mock readings.
+  Pull-to-refresh, swipe-actions, search, filter chips.
+
+## Earlier — Waves 1..3
+
+Squash-merged into `main`. Per-wave PRs:
+- Wave 3: navigation (Drawer + Tabs), Splash, License, Login, PinSetup,
+  ServerSettings, ThemeProvider, design-system tokens, RTL bootstrap.
+- Wave 2: i18next setup, MMKV prefs, secureStorage (Keychain), HTTP
+  client (axios + interceptors), zod schema registry, AppError type.
+- Wave 1: project scaffold (RN 0.74.5 bare init, TS strict, ESLint,
+  Prettier, Babel module-resolver `@/`, WatermelonDB adapter+schema).
+
+## PRs (recent)
+
+- **#26** (open) — `fix(auth): use /Authenticate (WCF) as primary, /Login as fallback`
+- **#25** (closed, replaced by #26) — `fix(auth): send 'appid' lowercase` (was wrong)
+- **#24** (merged) — `Prep/wave 5 7 assets`
+- **#23** (merged) — `Wave 5 — Printer + Scanner + Company Info`
+- **#22** (merged) — `Wave 4 — Readings + Dev Bypass`
+
+## CI artifacts
+
+| Run | Build | Size | Used for |
+|---|---|---|---|
+| `26259193684` | PR #26 debug | TBD | WCF auth field test |
+| `26170089729` | Wave 5 debug | 46.98 MB | First real-server login attempt (failed → led to PR #26) |
+| (Wave 4) | debug | 46.93 MB | First Tailscale connectivity test |
+
+Download from the workflow run page (Actions tab on GitHub) → "Artifacts"
+section at the bottom.
