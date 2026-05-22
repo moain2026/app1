@@ -5,30 +5,49 @@
 
 ## ▶️ RESUME FROM HERE
 
-**Wave 5 main body shipped. PR #23 is open and awaiting CI + merge.**
-👉 https://github.com/moain2026/app1/pull/23
+**PR #26 (WCF authentication fix) is OPEN and CI is GREEN. Awaiting field-test by the user.**
+👉 https://github.com/moain2026/app1/pull/26
 
 **Next concrete action when you return:**
-1. Verify CI APK build on PR #23 (target ~50 MB; tag the row in
-   `PROJECT_PLAYBOOK.md` §11 once known).
-2. If green, request merge (or merge yourself if authorized).
-3. Then start **Wave 6 — Bonds**: see WAVE_5_PLAN.md "Wave 6 preview"
-   section and PROJECT_PLAYBOOK.md §8 backlog.
+1. Ask the user to install the APK from PR #26's CI artifact and test login
+   with real credentials (`معين العباسي` / `771771`) against the live
+   WCF server at `http://100.87.131.115:3000/electric/`.
+2. **If login succeeds** → merge PR #26 → start **Wave 6 — Bonds**
+   (see PROJECT_PLAYBOOK.md §8 backlog and WAVE_5_PLAN.md "Wave 6 preview").
+3. **If login fails** → the user will copy the "تفاصيل" diagnostic from
+   the error box on LoginScreen. The box will now contain raw responses
+   from BOTH `/Authenticate` (STAGE 1) AND `/Login` (STAGE 2). Use those
+   raw bodies to decide the next fix (the two-stage code in
+   `src/stores/authStore.ts` makes this debuggable).
 
-**Deferred Wave 5 follow-ups (kept in backlog, NOT blocking the PR):**
-- **Wave 5.2** — `ScannerScreen.tsx` real camera integration via
-  `react-native-vision-camera@3.x`. Currently a stub.
-- **Wave 5.3** — `CompanyInfoScreen.tsx` real react-hook-form + zod form
-  bound to `company_info` table. Currently a stub.
+## Critical context for the new agent
 
-## Branch / Commits
+**The backend is a .NET WCF service**, NOT PHP. This was discovered late
+in the session (after PR #25 was shipped on a wrong assumption). Full
+investigation history is in `AGENT_CONTEXT/AUTH_INVESTIGATION.md`. The
+short version:
 
-- **Branch:** `feat/wave-5-printer-scanner`
-- **Last commit:** `07c3fdc docs(playbook): Wave 5 section + ADR-015..018 + backlog update`
-- **PR:** #23 — https://github.com/moain2026/app1/pull/23
-- **Commits in branch (vs main):** 11 — see COMMIT_HISTORY.md for detail.
+- Live server: `http://100.87.131.115:3000/electric/` (over Tailscale VPN)
+- Official auth endpoint: `/Authenticate` with `{ "User", "Password", "appId" }`
+  (Capital U, Capital P, camelCase appId) → returns a JSON string literal
+- Legacy `/Login` endpoint exists but appears deprecated (returns `{}`)
+- All other endpoints use `appId` (camelCase) in their query strings —
+  consistent with `/Authenticate`'s field naming
 
-## Wave 5 — DONE
+`src/stores/authStore.ts` now tries `/Authenticate` first, falls back to
+`/Login` on failure, and surfaces BOTH raw responses in the diagnostic
+error box for the user to copy.
+
+## Branches / PRs
+
+- **Active branch:** `fix/wcf-authenticate-endpoint`
+- **Last commit:** `8c0c48b fix(auth): switch to /Authenticate (WCF) with /Login fallback`
+- **Main branch:** at `3ba68ac Prep/wave 5 7 assets (#24)` (Wave 5 merged)
+- **Open PRs:** #26 (WCF fix, this branch → main)
+- **Closed PRs this session:** #25 (was a wrong-direction fix; replaced by #26)
+- **Merged PRs this session:** #23 (Wave 5), #24 (Wave 5 prep assets)
+
+## Wave 5 — DONE (merged via PR #23)
 
 ### Services
 - ✅ `src/services/printer/cp1256.ts` (encoder + Arabic shaper + 226-entry map)
@@ -61,9 +80,7 @@
 - ✅ `android/app/src/main/AndroidManifest.xml` (BT + Camera perms)
 - ✅ `src/i18n/locales/ar.json` (printer / scanner / company / drawer keys)
 - ✅ `PROJECT_PLAYBOOK.md` (Wave 5 history + ADR-015..018 + backlog refresh)
-- ✅ `AGENT_CONTEXT/` (10 handoff files)
 - ✅ `react-native-bluetooth-classic@~1.73.0-rc.12` + `buffer@~6.0.3` installed
-- ✅ PR #23 opened against `main`
 
 ## Wave 5 — DEFERRED (follow-ups, not blocking)
 
@@ -72,11 +89,24 @@
 - ⏳ **Wave 5.3** — `CompanyInfoScreen.tsx` real form (`react-hook-form` + `zod`)
   bound to `company_info` table. Currently a stub.
 
+## Auth Fix Wave (PR #26) — current
+
+- ✅ `src/services/api/endpoints.ts` — added `authenticate` endpoint;
+  kept `login` as documented fallback
+- ✅ `src/services/api/schemas/auth.ts` — added `AuthenticateRequestSchema`
+  + `AuthenticateResponseSchema` (z.string for the raw quoted-string body)
+- ✅ `src/stores/authStore.ts` — rewrote `login()` as a two-stage flow:
+  STAGE 1 `/Authenticate` → STAGE 2 `/Login` fallback; cross-stage
+  diagnostics in `lastLoginError.responseBody`
+- ✅ `tsc --noEmit` → 0 errors
+- ✅ CI: both checks pass (`tsc --noEmit` 36s, `Assemble Debug APK` 6m18s)
+- ⏳ User field-test pending
+
 ## Build State
 
-- `npx tsc --noEmit`: **0 errors** (last run after `07c3fdc`).
-- Wave 5 Metro bundle: not attempted (CI will do it).
-- Wave 5 CI APK: triggered by PR #23 — awaiting result.
+- `npx tsc --noEmit`: **0 errors** (last run after `8c0c48b`).
+- PR #26 CI: ✅ both checks pass — APK artifact `abbasi-tahseel-debug-apk`
+  ready on workflow run `26259193684`.
 
 ## Wave 6 + 7 (Future)
 
@@ -94,10 +124,14 @@
 
 ## Quick links
 
-- PR #23: https://github.com/moain2026/app1/pull/23
-- Branch URL: https://github.com/moain2026/app1/tree/feat/wave-5-printer-scanner
-- Playbook: `PROJECT_PLAYBOOK.md`
-- Coding rules: `AGENT_CONTEXT/CODING_RULES.md`
-- Wave plan archive: `AGENT_CONTEXT/WAVE_5_PLAN.md`
-- Commit history decoded: `AGENT_CONTEXT/COMMIT_HISTORY.md`
-- Handoff protocol: `AGENT_CONTEXT/HANDOFF_PROTOCOL.md`
+- **PR #26 (current):** https://github.com/moain2026/app1/pull/26
+- **PR #25 (closed, archived):** https://github.com/moain2026/app1/pull/25
+- **PR #23 (Wave 5 merged):** https://github.com/moain2026/app1/pull/23
+- **Repo:** https://github.com/moain2026/app1
+- **Playbook:** `PROJECT_PLAYBOOK.md`
+- **Coding rules:** `AGENT_CONTEXT/CODING_RULES.md`
+- **Auth investigation:** `AGENT_CONTEXT/AUTH_INVESTIGATION.md`
+- **Network topology:** `AGENT_CONTEXT/NETWORK_TOPOLOGY.md`
+- **Legacy Java map:** `AGENT_CONTEXT/LEGACY_JAVA_MAP.md`
+- **Skills folder:** `.claude/skills/` (8 skill files, see `.claude/skills/README.md`)
+- **Handoff prompt:** `/home/user/webapp/HANDOFF_PROMPT.md` (root of repo)
