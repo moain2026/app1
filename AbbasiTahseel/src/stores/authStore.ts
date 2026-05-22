@@ -35,6 +35,7 @@ import {
   isDevBypassCredentials,
 } from '@/services/auth/devBypass';
 import { getSecureId } from '@/services/security/licenseManager';
+import { syncNow } from '@/services/sync';
 import {
   clearAllAuthCredentials,
   getAccessToken,
@@ -152,6 +153,34 @@ function maskSecureId(value: string): string {
   if (value.length === 0) return '<empty>';
   if (value.length <= 8) return `${value.slice(0, 4)}…`;
   return `${value.slice(0, 8)}…`;
+}
+
+/**
+ * Fire a post-login sync attempt — non-blocking, silent on failure.
+ *
+ * Called only after a REAL (non-dev-bypass) login succeeds. The Java
+ * original triggers an equivalent pull immediately after `/Login`
+ * returns the Users payload — we mirror that here so the operator sees
+ * fresh reference data (accounts, places, groups, bonds, readings)
+ * without waiting for the startup or periodic timers.
+ *
+ * Implementation notes:
+ *   • Fire-and-forget: the caller has already persisted tokens and the
+ *     login() function should return `true` immediately. Any awaitable
+ *     coupling would delay the navigation transition by seconds on
+ *     slower devices.
+ *   • Errors are swallowed at this layer because the sync coordinator
+ *     already classifies and persists them to sync_logs + lastError.
+ *   • The coordinator's own preconditions (online + auth token) make
+ *     this safe to call even if the network just blipped — it will
+ *     emit `engine:skipped` and return gracefully.
+ */
+function fireAfterLoginSync(): void {
+  void syncNow('after_login').catch((err: unknown) => {
+    log.warn('after-login sync failed (non-fatal)', {
+      message: err instanceof Error ? err.message : String(err),
+    });
+  });
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -327,6 +356,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isDevBypass: false,
         });
         log.info('STAGE 1 — /Authenticate success', { username });
+        // Wave 7 P1: kick a non-blocking pull of reference + collector
+        // data so the user lands on a hot cache. Dev-bypass never gets
+        // here (handled in the bypass branch above).
+        fireAfterLoginSync();
         return true;
       }
 
@@ -438,6 +471,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isDevBypass: false,
       });
       log.info('STAGE 2 — /Login fallback success', { username });
+      // Wave 7 P1: same non-blocking post-login sync as STAGE 1.
+      fireAfterLoginSync();
       return true;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
