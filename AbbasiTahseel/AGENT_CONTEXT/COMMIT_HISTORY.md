@@ -2,6 +2,52 @@
 
 > Most-recent first. Run `git log --oneline -20` for the live view.
 
+## feat/wave-6-beta-data-layer branch — Wave 6-Β Data Layer (PR #29 — OPEN)
+
+| SHA       | Date       | Message                                                                                                  | Files | +/-           |
+|-----------|------------|----------------------------------------------------------------------------------------------------------|-------|----------------|
+| `cdcca90` | 2026-05-22 | `fix(wave-6-β): rename bonds getStats/observeStats to avoid barrel export collision with readingsRepository (TS2308)` | 2     | +4 / −4        |
+| `c4cb704` | 2026-05-22 | `feat(wave-6-β): data layer — repositories, seeders, migration runner, observable pickers + 3 screens`   | 22    | +1958 / −161   |
+
+- **`cdcca90`** Mechanical fix for the only `tsc --noEmit` error on PR #29's
+  first push: both `readingsRepository` and `bondsRepository` exported a
+  `getStats` / `observeStats` symbol, causing TS2308 in the
+  `services/repository/index.ts` barrel. Renamed the bonds exports to
+  `getBondStats` / `observeBondStats` and updated the only consumer
+  (`BondsListScreen.tsx`). CI went green on the second push (job
+  `77335964528`, 37s).
+
+- **`c4cb704`** Wave 6-Β Data Layer per user decision D2 + E-alt.
+  Repositories (5 new) + view-models (2 new + barrel) + seeders (5 new
+  incl. orchestrator) + migration runner skeleton (no hooks registered).
+  Wires 6 surfaces to observables: 3 pickers (Account, Place, Currency) +
+  3 screens (BondsList, BondDetail, ReadingsHistory header). Untouched:
+  forms (need WCF push contracts), Reports (need aggregation tables),
+  Profile/About/Bulk (need Settings store), Model field expansion
+  (separate PR after WCF Help dump). Migration runner version is `0`
+  with empty `HOOKS` — explicitly "جاهز بدون تطبيق" per user.
+
+## main branch — Wave 6-Α UI Skeleton line (PR #28 — MERGED)
+
+- **`69b22c6`** `feat(wave-6-α): UI Skeleton — bonds, reports, readings, settings, pickers, design-system, mocks, i18n (#28)`
+  Squash-merge of PR #28 (head branch superseded by the merge). Wave 6-Α
+  UI skeleton: bond screens (List/Detail/Form/PaymentForm), reports
+  screens, readings history skeleton, settings, pickers (Account/Place/
+  Currency), design-system primitives (Chip, FAB, SearchBar, EmptyState,
+  MockBanner, ErrorBanner, Card, SectionHeader, etc.), mock fixtures
+  (bonds, accounts, places, currencies, bondPayments), i18n keys.
+  CI green: `tsc --noEmit` (30s) + `Assemble Debug APK` (6m 15s).
+  Final fix on the PR head: commit `001bf3b` resolved 8 tsc errors.
+
+## main branch — docs sync (PR #27 — MERGED)
+
+- **`75f72d8`** `chore(docs): sync CURRENT_STATE + COMMIT_HISTORY after PR #26 merge (#27)`
+  Small documentation-only sync; no source code touched. NOTE: this file
+  appears to have NOT been updated by that PR (its head was still
+  pointing at PR #26 reality when Wave 6-Α started). PR #29 follow-up
+  commit `docs(agent-context): sync state after Wave 6-Β PR #29`
+  catches both this PR and PR #28 up at once.
+
 ## main branch — Auth Fix line (PR #26 — MERGED `2026-05-22T01:01:00Z`)
 
 - **`3e7e557`** `fix(auth): use /Authenticate (WCF) as primary, /Login as fallback (#26)`
@@ -59,6 +105,9 @@ were not preserved as separate remote branches.
 
 ## PRs (recent — most-recent first)
 
+- **#29** (OPEN, head `feat/wave-6-beta-data-layer`) — `feat(wave-6-β): Data Layer — Repositories, Observables, Migration Runner Skeleton`
+- **#28** (merged, squash-commit `69b22c6`) — `feat(wave-6-α): UI Skeleton — bonds, reports, readings, settings, pickers, design-system, mocks, i18n`
+- **#27** (merged, squash-commit `75f72d8`) — `chore(docs): sync CURRENT_STATE + COMMIT_HISTORY after PR #26 merge`
 - **#26** (merged `2026-05-22T01:01:00Z`, head `fix/wcf-authenticate-endpoint`)
   — `fix(auth): use /Authenticate (WCF) as primary, /Login as fallback`
 - **#25** (closed, replaced by #26) — `fix(auth): send 'appid' lowercase` (was wrong)
@@ -70,6 +119,9 @@ were not preserved as separate remote branches.
 
 | Run | Branch | Commit | Status | Used for |
 |---|---|---|---|---|
+| `26274668684` | feat/wave-6-beta-data-layer | `cdcca90` | ✅ `tsc --noEmit` pass (37s); APK in flight at handoff | PR #29 (Wave 6-Β Data Layer) |
+| `26274606920` | feat/wave-6-beta-data-layer | `c4cb704` | ❌ `tsc --noEmit` fail (TS2308 barrel collision); fixed by `cdcca90` | PR #29 first push |
+| (PR #28 final)| (Wave 6-Α PR) | `001bf3b` (pre-squash) → `69b22c6` (squash) | ✅ tsc 30s + APK 6m 15s | Wave 6-Α UI Skeleton merge |
 | `26262216831` | main | `3e7e557` | ✅ success | Post-merge APK for PR #26 (WCF auth) |
 | `26170412059` | main | `3ba68ac` | ✅ success | Wave 5 + assets prep |
 | `26259193684` | fix/wcf-authenticate-endpoint | (pre-merge) | ✅ success | WCF auth field-test APK |

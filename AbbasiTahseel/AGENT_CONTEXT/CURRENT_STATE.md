@@ -5,20 +5,29 @@
 
 ## ▶️ RESUME FROM HERE
 
-**PR #26 (WCF two-stage authentication) is MERGED. Wave 5 train fully landed.**
-👉 Next concrete work: **Wave 6 — Bonds + BondPayments**.
+**PR #29 (Wave 6-Β Data Layer) is OPEN, CI green on `tsc --noEmit`, awaiting merge.**
+**Wave 6-Α UI Skeleton (PR #28) merged as `69b22c6`. WCF auth (PR #26) and Wave 5 train fully landed.**
+👉 Next concrete work (after PR #29 merges): **Wave 6-Γ — Bond mutations + Reports aggregation + Model field expansion**.
 
 **Next concrete action when you return:**
-1. Branch off `main` as `feat/wave-6-bonds`.
-2. Read `WAVE_5_PLAN.md` "Wave 6 preview" + `PROJECT_PLAYBOOK.md` §8 backlog
-   + `prepared-assets/mock/mock-bonds.json` (gitignored reference) for the
-   expected bond + payment shape.
-3. Authoritative API truth = the live WCF Service Explorer at
+1. Confirm PR #29 merged into `main`; pull `main` and delete `feat/wave-6-beta-data-layer`.
+2. Branch off `main` as `feat/wave-6-gamma-mutations` (or comparable).
+3. **Wave 6-Γ scope** (deferred from Wave 6-Β by user decision D2 + E-alt):
+   - Bond mutation paths (`createBond` / `updateBond` / `deleteBond`) in
+     `bondsRepository.ts` — requires finalized WCF push contract for `ItemBonds`.
+   - `BondFormScreen` + `BondPaymentFormScreen` wire from MOCK → repository.
+   - Reports screens — need new aggregation tables for monthly cas/asts rollup.
+   - `ReadingsHistoryScreen.history` table — same aggregation dependency.
+   - Model field expansion: `sk`, `mt`, `kmsn`, `matm33`, `rtrdn` (Reading),
+     `name_s`, `balance`, `cas`, `currencyname`, `balance_local` (Bond) —
+     **separate PR after the user provides the WCF Help dump**.
+   - Boolean → int32 user permission migration — separate PR.
+4. Authoritative API truth = the live WCF Service Explorer at
    `http://100.87.131.115:3000/electric/help` (Tailscale-only). Use
    `LEGACY_JAVA_MAP.md` + `Bond.java` / `BondPayment.java` decompiles only
    as a tie-breaker when the live help page is ambiguous (see rule in
    `.claude/skills/legacy-java-decompile-analysis.md`).
-4. **If any DB field name is unclear → STOP and ask the user.** Do not
+5. **If any DB field name is unclear → STOP and ask the user.** Do not
    guess. PR #25 shipped on a guess and was thrown away.
 
 ## Critical context for the new agent
@@ -41,11 +50,12 @@ error box for the user to copy (separator: `──────────`). AD
 
 ## Branches / PRs
 
-- **Active branch:** `main` (clean, in sync with origin)
-- **Last commit on main:** `3e7e557 fix(auth): use /Authenticate (WCF) as primary, /Login as fallback (#26)`
-- **Next branch to create:** `feat/wave-6-bonds` (off main)
-- **Open PRs:** none
-- **Recently merged PRs:** #26 (WCF two-stage auth), #24 (Wave 5/7 prep assets), #23 (Wave 5)
+- **Active branch:** `feat/wave-6-beta-data-layer` (PR #29 open, awaiting merge)
+- **Last commit on main:** `69b22c6 feat(wave-6-α): UI Skeleton — bonds, reports, readings, settings, pickers, design-system, mocks, i18n (#28)`
+- **Last commit on active branch:** `cdcca90 fix(wave-6-β): rename bonds getStats/observeStats to avoid barrel export collision (TS2308)`
+- **Next branch to create (after PR #29 merges):** `feat/wave-6-gamma-mutations` (off main)
+- **Open PRs:** **#29** (Wave 6-Β Data Layer — CI green on tsc, APK pending)
+- **Recently merged PRs:** #28 (Wave 6-Α UI Skeleton), #27 (docs sync), #26 (WCF two-stage auth), #24 (Wave 5/7 prep assets), #23 (Wave 5)
 - **Closed-without-merge PRs:** #25 (wrong PHP-style fix, replaced by #26)
 
 ## Wave 5 — DONE (merged via PR #23, head branch `feat/wave-5-printer-scanner`)
@@ -113,7 +123,107 @@ error box for the user to copy (separator: `──────────`). AD
   Debug APK) at `2026-05-22T01:01:03Z`, head `3e7e557`. APK artifact name:
   `abbasi-tahseel-debug-apk` (30-day retention).
 
-## Wave 6 — NEXT (planned scope)
+## Wave 6-Β: Data Layer (PR #29 — OPEN)
+
+**Branch:** `feat/wave-6-beta-data-layer` (off `main` @ `69b22c6`)
+**Commits:** `c4cb704` (initial, 22 files, +1958/−161) + `cdcca90` (TS2308 fix)
+**CI:** `tsc --noEmit` ✅ green; `Assemble Debug APK` was running at handoff.
+**User decision applied:** D2 + E-alt — extend existing `src/services/api/`
+tree (no new top-level folders), use the existing field set only, defer
+Model expansion and boolean→int32 to later PRs.
+
+### What shipped
+
+**Repositories (6 total — 5 new + 1 pre-existing):**
+- `src/services/repository/bondsRepository.ts` — `observeBonds`,
+  `observeBondStats`, `observeBondByUuid`, `applyNumericBondNoFilter`,
+  `fetchBonds`, `findBondByUuid`, `getBondStats`
+- `src/services/repository/bondPaymentsRepository.ts` —
+  `observePaymentsByBond`, `fetchPaymentsByBond`
+- `src/services/repository/accountsRepository.ts` — `observeAccounts`,
+  `fetchAccounts`, `findAccountByCode`, `observeAccountByCode`,
+  `findAccountByRemoteId`
+- `src/services/repository/placesRepository.ts` — `observePlaces`,
+  `fetchPlaces`, `findPlaceByRemoteId`
+- `src/services/repository/currenciesRepository.ts` — `observeCurrencies`,
+  `fetchCurrencies`, `findCurrencyByRemoteId`, `findBaseCurrency`
+- `src/services/repository/readingsRepository.ts` (pre-existing, untouched)
+- `src/services/repository/index.ts` — barrel
+
+All `observe*` return `Observable<T[]>` from rxjs (proper ES import,
+never `require()`). Search uses `Q.like` with `%/_` escaping. Read-only —
+**no mutations** in this PR (deferred to Wave 6-Γ).
+
+**View-Models (3 files):**
+- `src/services/repository/viewModels/bondListItem.vm.ts` — `BondLookups`,
+  `emptyBondLookups`, `indexByRemoteId`, `toBondListItem(s)` (Bond →
+  MockBond, 5→3 syncStatus collapse, denormalized `account.code` +
+  `currency.symbol` via lookup map)
+- `src/services/repository/viewModels/pickers.vm.ts` — `toMockPlace`,
+  `toMockAccount`, `toMockCurrency` (+ array variants) with static
+  MOCK_* fallback for fields not on WMDB (placeName, groupName,
+  subscriberCount, active)
+- `src/services/repository/viewModels/index.ts` — barrel
+
+**Seeders (5 new + 1 pre-existing):**
+- `src/services/mock/seedCurrencies.ts` — symbol-as-code
+- `src/services/mock/seedPlaces.ts` — drops subscriberCount
+- `src/services/mock/seedAccounts.ts` — drops place/group
+- `src/services/mock/seedBonds.ts` — **two-phase write** (bonds → query
+  back for WMDB local ids → bond_payments with `bond_id` FK)
+- `src/services/mock/seedAll.ts` — orchestrator:
+  `parallel(currencies, places, accounts) → bonds → readings`
+- `src/services/mock/seedMockData.ts` (pre-existing readings seeder,
+  invoked by `seedAll`)
+
+**Migration Runner Skeleton:**
+- `src/database/migrationRunner.ts` — `MIGRATION_RUNNER_VERSION = 0`,
+  empty `HOOKS` registry, MMKV-backed version persistence
+  (id: `abbasi-tahseel-migrations`), fail-open per hook, idempotent.
+  Wired into `App.tsx` bootstrap (`initI18n → runMigrationHooks →
+  syncStore.init`) but is a no-op until Wave 6-Γ registers the first hook.
+  Rules in header: ADDITIVE ONLY, IDEMPOTENT, FAIL-OPEN, NO NETWORK.
+
+### Wired surfaces — 6 of ~25 (deliberate narrowing)
+
+| ✅ Wired in PR #29 (6) | Observable used |
+|---|---|
+| `AccountPicker` | `observeAccounts({searchQuery})` → `toMockAccounts` |
+| `PlacePicker` | `observePlaces` → `toMockPlaces` |
+| `CurrencyPicker` | `observeCurrencies` → `toMockCurrencies` |
+| `BondsListScreen` | `observeBonds` + `observeBondStats` + `observeAccounts` + `observeCurrencies` → `BondLookups` → `toBondListItems` |
+| `BondDetailScreen` | `observeBondByUuid` + `observePaymentsByBond(bond.id)` + `findCurrencyByRemoteId` (3-state load: undefined/null/Bond) |
+| `ReadingsHistoryScreen` | `observeAccountByCode` (header only; history table stays MOCK) |
+
+Untouched: `BondCard`, picker rows, chip bars, etc. The view-model layer
+absorbed the shape difference so no presentation component needed editing.
+
+### Deferred to Wave 6-Γ (documented in code headers + PR #29 body)
+
+- **Bond mutation paths** (`createBond` / `updateBond` / `deleteBond`) —
+  waiting on finalized WCF Help dump for `ItemBonds` + `SaveBondPayment`.
+- **Form screens** (`BondFormScreen`, `BondPaymentFormScreen`) — still on
+  MOCK; depend on the mutation paths above.
+- **Reports screens** — need new aggregation tables on WMDB (monthly
+  cas/asts rollup). The current `readings` table has one row per
+  (account, month) but no rollup columns.
+- **Readings history aggregation** in `ReadingsHistoryScreen` — same
+  table dependency as Reports.
+- **Profile / About / Bulk screens** — wait on Settings store wiring.
+- **Model field expansion** (`sk`, `mt`, `kmsn`, `matm33`, `rtrdn`,
+  `name_s`, `balance`, `cas`, `currencyname`, `balance_local`) —
+  separate PR after WCF Help dump (user E-alt).
+- **Boolean → int32 user permission migration** — separate PR.
+- **Place filter on `accountsRepository`** — currently client-side
+  because `accounts.tblh_id` is not yet on the live pull.
+
+### Files in PR #29
+
+22 files in commit `c4cb704` + 2 files in `cdcca90`. Net diff:
++1962 / −165. Created: 1 migrationRunner + 6 repositories + 3 viewModels
++ 5 seeders. Modified: `App.tsx` + 3 pickers + 3 screens.
+
+## Wave 6 — NEXT (planned scope — superseded; kept for context)
 
 - **Goal:** Bonds + BondPayments full screens, store, API, offline-first
   enqueue, printer integration via existing `buildBondReceipt`.
@@ -150,6 +260,9 @@ error box for the user to copy (separator: `──────────`). AD
 ## Quick links
 
 - **Repo:** https://github.com/moain2026/app1
+- **PR #29 (Wave 6-Β Data Layer, OPEN):** https://github.com/moain2026/app1/pull/29
+- **PR #28 (Wave 6-Α UI Skeleton, merged):** https://github.com/moain2026/app1/pull/28
+- **PR #27 (docs sync, merged):** https://github.com/moain2026/app1/pull/27
 - **PR #26 (merged, WCF auth):** https://github.com/moain2026/app1/pull/26
 - **PR #25 (closed, archived):** https://github.com/moain2026/app1/pull/25
 - **PR #23 (Wave 5 merged):** https://github.com/moain2026/app1/pull/23
