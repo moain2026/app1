@@ -5,30 +5,35 @@
 
 ## ▶️ RESUME FROM HERE
 
-**PR #29 (Wave 6-Β Data Layer) is OPEN, CI green on `tsc --noEmit`, awaiting merge.**
-**Wave 6-Α UI Skeleton (PR #28) merged as `69b22c6`. WCF auth (PR #26) and Wave 5 train fully landed.**
-👉 Next concrete work (after PR #29 merges): **Wave 6-Γ — Bond mutations + Reports aggregation + Model field expansion**.
+**Wave 7 P1 (Sync Activation) is OPEN as a fresh PR — CI pending. Wave 6-Β
+(PR #29) merged into `main` as `a9a5da5`.**
+**User has split Wave 7 into FOUR phases (P1-P4), each a separate PR. P1
+is "activate the sync engine + after-login trigger + lifecycle"; the Sync
+UI was already universal via `AppHeader` → `<SyncStatusBadge />`.**
+👉 Next concrete work (after Wave 7 P1 merges): **Wave 7 P2 — Bond mutations**.
 
 **Next concrete action when you return:**
-1. Confirm PR #29 merged into `main`; pull `main` and delete `feat/wave-6-beta-data-layer`.
-2. Branch off `main` as `feat/wave-6-gamma-mutations` (or comparable).
-3. **Wave 6-Γ scope** (deferred from Wave 6-Β by user decision D2 + E-alt):
-   - Bond mutation paths (`createBond` / `updateBond` / `deleteBond`) in
-     `bondsRepository.ts` — requires finalized WCF push contract for `ItemBonds`.
-   - `BondFormScreen` + `BondPaymentFormScreen` wire from MOCK → repository.
-   - Reports screens — need new aggregation tables for monthly cas/asts rollup.
-   - `ReadingsHistoryScreen.history` table — same aggregation dependency.
-   - Model field expansion: `sk`, `mt`, `kmsn`, `matm33`, `rtrdn` (Reading),
-     `name_s`, `balance`, `cas`, `currencyname`, `balance_local` (Bond) —
-     **separate PR after the user provides the WCF Help dump**.
-   - Boolean → int32 user permission migration — separate PR.
-4. Authoritative API truth = the live WCF Service Explorer at
-   `http://100.87.131.115:3000/electric/help` (Tailscale-only). Use
-   `LEGACY_JAVA_MAP.md` + `Bond.java` / `BondPayment.java` decompiles only
-   as a tie-breaker when the live help page is ambiguous (see rule in
-   `.claude/skills/legacy-java-decompile-analysis.md`).
-5. **If any DB field name is unclear → STOP and ask the user.** Do not
-   guess. PR #25 shipped on a guess and was thrown away.
+1. Confirm Wave 7 P1 PR merged into `main`; pull `main` and delete
+   `feat/wave-7-p1-sync-activation`.
+2. Branch off `main` as `feat/wave-7-p2-bond-mutations`.
+3. **Wave 7 P2 scope** (Bond Mutations, 4-5h budget):
+   - Add `createBond` / `updateBond` / `deleteBond` to `bondsRepository.ts`.
+   - Wire `BondFormScreen` + `BondPaymentFormScreen` from MOCK → repository
+     + sync-engine enqueue (`enqueueBondSave` / `enqueueBondPaymentSave`).
+   - Verify push handlers cover the new mutation paths.
+   - Bind on the WCF push contract: `SaveBond` (POST), `UpdateBond` (PUT),
+     `DeleteBond` (DELETE) — all confirmed live in `endpoints.ts`.
+4. **Authoritative source order** (per user binding rule, 2026-05-22):
+   - Primary reference: `ElectricCollector_Full_Analysis/source_code/`
+     (Java decompiled — cloned at `/home/user/refs/`).
+   - Tie-breaker: live WCF Help page at
+     `http://100.87.131.115:3000/electric/help` (Tailscale-only).
+   - **Ignore**: GenSpeak, ElectriceAppLastUpdateB3.
+5. **Scope lock**: P2 → P2 only. Do NOT silently fix params on pull
+   handlers (that's P3 scope). Do NOT introduce `appId`/`nou` auto-
+   injection at api-client layer unless user explicitly requests.
+6. **If any DB field name or wire-format is unclear → consult Java source
+   first, then ask user only if Java is also ambiguous.**
 
 ## Critical context for the new agent
 
@@ -50,12 +55,12 @@ error box for the user to copy (separator: `──────────`). AD
 
 ## Branches / PRs
 
-- **Active branch:** `feat/wave-6-beta-data-layer` (PR #29 open, awaiting merge)
-- **Last commit on main:** `69b22c6 feat(wave-6-α): UI Skeleton — bonds, reports, readings, settings, pickers, design-system, mocks, i18n (#28)`
-- **Last commit on active branch:** `cdcca90 fix(wave-6-β): rename bonds getStats/observeStats to avoid barrel export collision (TS2308)`
-- **Next branch to create (after PR #29 merges):** `feat/wave-6-gamma-mutations` (off main)
-- **Open PRs:** **#29** (Wave 6-Β Data Layer — CI green on tsc, APK pending)
-- **Recently merged PRs:** #28 (Wave 6-Α UI Skeleton), #27 (docs sync), #26 (WCF two-stage auth), #24 (Wave 5/7 prep assets), #23 (Wave 5)
+- **Active branch:** `feat/wave-7-p1-sync-activation` (Wave 7 P1 PR pending push)
+- **Last commit on main:** `a9a5da5 feat(wave-6-β): Data Layer — Repositories, Observables, Migration Runner Skeleton (#29)`
+- **Last commit on active branch:** `13c22af feat(wave-7-p1): start/stop sync engine on auth-state transitions`
+- **Next branch to create (after Wave 7 P1 merges):** `feat/wave-7-p2-bond-mutations` (off main)
+- **Open PRs:** Wave 7 P1 PR (number TBD on push)
+- **Recently merged PRs:** #29 (Wave 6-Β Data Layer), #28 (Wave 6-Α UI Skeleton), #27 (docs sync), #26 (WCF two-stage auth), #24 (Wave 5/7 prep assets), #23 (Wave 5)
 - **Closed-without-merge PRs:** #25 (wrong PHP-style fix, replaced by #26)
 
 ## Wave 5 — DONE (merged via PR #23, head branch `feat/wave-5-printer-scanner`)
@@ -123,11 +128,11 @@ error box for the user to copy (separator: `──────────`). AD
   Debug APK) at `2026-05-22T01:01:03Z`, head `3e7e557`. APK artifact name:
   `abbasi-tahseel-debug-apk` (30-day retention).
 
-## Wave 6-Β: Data Layer (PR #29 — OPEN)
+## Wave 6-Β: Data Layer (PR #29 — MERGED `a9a5da5`)
 
-**Branch:** `feat/wave-6-beta-data-layer` (off `main` @ `69b22c6`)
-**Commits:** `c4cb704` (initial, 22 files, +1958/−161) + `cdcca90` (TS2308 fix)
-**CI:** `tsc --noEmit` ✅ green; `Assemble Debug APK` was running at handoff.
+**Branch:** `feat/wave-6-beta-data-layer` (off `main` @ `69b22c6`) — DELETED post-merge.
+**Commits:** `c4cb704` (initial, 22 files, +1958/−161) + `cdcca90` (TS2308 fix) + `cb690ce` (docs sync).
+**CI:** `tsc --noEmit` ✅ green; `Assemble Debug APK` ✅ green.
 **User decision applied:** D2 + E-alt — extend existing `src/services/api/`
 tree (no new top-level folders), use the existing field set only, defer
 Model expansion and boolean→int32 to later PRs.
@@ -248,20 +253,71 @@ absorbed the shape difference so no presentation component needed editing.
 - **Success criteria:** `tsc --noEmit` clean, `eslint` clean, CI APK
   builds green, PR opened with conventional title `feat(wave-6): bonds + bond payments`.
 
-## Wave 7 (Future)
+## Wave 7 — Complete Integration: Mock → Production (4 phases, P1 ACTIVE)
 
-- **Wave 7 — Reports + Profile + About + Release v1.0.0:**
-  - ReportsScreen (uses `posts` / `GetRepBalanceHeader` endpoint alias)
-  - ProfileScreen, AboutScreen
-  - Real release keystore + ProGuard rules
-  - Signed APK pipeline (`./gradlew assembleRelease`)
-  - Branch suggestion: `feat/wave-7-release`
+User's mission framing (verbatim): **"🚀 Wave 7 — Complete Integration:
+من Mock إلى Production"**. Split into FOUR separate PRs:
+
+### Wave 7 P1 — Sync Activation (THIS PR, OPEN)
+
+**Branch:** `feat/wave-7-p1-sync-activation` (off `main` @ `a9a5da5`)
+**Commits (3 atomic + 1 docs):**
+  1. `8471d14` — add `'after_login'` to `SyncTriggerReason` union (`types.ts`)
+  2. `123aaf5` — wire `syncNow('after_login')` in `authStore.ts` at both
+     STAGE 1 and STAGE 2 success branches (non-dev-bypass only,
+     fire-and-forget, errors swallowed at WARN)
+  3. `13c22af` — wire `initSyncEngine()` / `shutdownSync()` in `App.tsx`
+     tied to `(isAuthenticated && !isDevBypass)` transitions + cold-restart
+     hot-path + cleanup on unmount
+  4. (this commit) — docs sync
+
+**Sync UI**: Already universal via `AppHeader → <SyncStatusBadge />` (Wave 6-Α).
+`ReadingsScreen` additionally has a refresh-cw icon + pull-to-refresh (Wave 4).
+No screen edits were required in P1.
+
+**Verification deltas (flagged in PR description, deferred per scope lock):**
+  - `referencePullHandlers.ts` and `readingPullHandler.ts` do NOT pass
+    `appId`, `nou`, `id`, `sdate`, `edate` — the Java original requires
+    these. **DEFERRED to P3** (Reading save + Reports) since pull-param
+    plumbing requires authStore → handler context wiring that belongs in
+    that phase. Dev bypass uses mocks, so no runtime impact in P1.
+  - `auth.interceptor.ts` uses a header-sentinel pattern driven by the
+    endpoint registry's `requiresAuth: false` field, not a hardcoded
+    5-endpoint list. Current public endpoints (non-deprecated):
+    `authenticate`, `login`, `resetPassword`, `test` (4 live).
+    `/GetCallerIdentity` and `/` are not present on the WCF server.
+    → **NO CHANGE** — architecturally different from spec, but the
+    behaviour the spec wants (skip Bearer on public endpoints) is
+    already correct. Documented in PR.
+
+### Wave 7 P2 — Bond Mutations (NEXT, 4-5h)
+Add `createBond` / `updateBond` / `deleteBond` to `bondsRepository`,
+wire BondFormScreen + BondPaymentFormScreen via enqueue helpers.
+
+### Wave 7 P3 — Readings save + 8 Reports (3-4h)
+SaveReading wire + ReportsScreen aggregation tables + 8 individual
+report screens. **This is where pull-handler params get plumbed**
+(`appId` + user-context injection from authStore).
+
+### Wave 7 P4 — Polish (2-3h)
+Token refresh interceptor, permissions screen, profile screen,
+end-to-end test pass, docs sync.
+
+## Wave 7 OLD (superseded — kept for archive)
+
+The original Wave 7 plan was "Reports + Profile + About + Release v1.0.0".
+User reframed it on 2026-05-22 to "Complete Integration: Mock → Production"
+split into P1-P4 as above. Reports / Profile / About now live in P3-P4.
 
 ## Quick links
 
 - **Repo:** https://github.com/moain2026/app1
-- **PR #29 (Wave 6-Β Data Layer, OPEN):** https://github.com/moain2026/app1/pull/29
+- **Wave 7 P1 PR (sync activation, OPEN — number TBD on push):** https://github.com/moain2026/app1/pulls
+- **PR #29 (Wave 6-Β Data Layer, MERGED):** https://github.com/moain2026/app1/pull/29
 - **PR #28 (Wave 6-Α UI Skeleton, merged):** https://github.com/moain2026/app1/pull/28
+- **Wave 7 reference repos (read-only at `/home/user/refs/`):**
+  - https://github.com/moain2026/ElectricCollector_Full_Analysis (master — Java source)
+  - https://github.com/moain2026/ElectricCollectorAnalysis (main — APK v28)
 - **PR #27 (docs sync, merged):** https://github.com/moain2026/app1/pull/27
 - **PR #26 (merged, WCF auth):** https://github.com/moain2026/app1/pull/26
 - **PR #25 (closed, archived):** https://github.com/moain2026/app1/pull/25

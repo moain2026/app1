@@ -23,6 +23,7 @@ import { initI18n } from './src/i18n';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { runMigrationHooks } from './src/database/migrationRunner';
 import { seedAllIfDevBypass } from './src/services/mock/seedAll';
+import { initSyncEngine, shutdownSync } from './src/services/sync';
 import { useAuthStore } from './src/stores/authStore';
 import { useSyncStore } from './src/stores/syncStore';
 
@@ -69,13 +70,49 @@ function App(): React.JSX.Element | null {
 
     void bootstrap();
 
-    // Subscribe to auth state — every time the session flips into Dev
-    // Bypass mode, ensure ALL mock entities are seeded (readings, bonds,
-    // accounts, places, currencies). The seeders are idempotent + gated
-    // on isDevBypass, so this is safe to call eagerly.
+    // Subscribe to auth state — drives two side-effects:
+    //
+    //  1. DEV BYPASS SEEDING — every time the session flips into Dev
+    //     Bypass mode, ensure ALL mock entities are seeded (readings,
+    //     bonds, accounts, places, currencies). Idempotent + gated on
+    //     isDevBypass, so safe to call eagerly.
+    //
+    //  2. WAVE 7 P1 — SYNC ENGINE LIFECYCLE
+    //     A real (non-bypass) authenticated session is what gates the
+    //     network sync engine. We start the engine on the rising edge
+    //     of `(isAuthenticated && !isDevBypass)` and tear it down on
+    //     the falling edge (logout). This covers both fresh login and
+    //     cold-restart-with-valid-token (SplashScreen calls
+    //     loadFromStorage which flips isAuthenticated).
+    //
+    //     Why NOT call initSyncEngine() unconditionally at startup?
+    //       - It would try to push/pull with no token, hit the no_auth
+    //         precondition, and emit a useless `engine:skipped` event.
+    //       - Worse: the foreground timer would keep firing every 5
+    //         minutes during the login-screen-shown phase.
+    //       - And on dev-bypass we explicitly DON'T want network
+    //         traffic — the bypass session uses mocks throughout.
     const unsubscribeAuth = useAuthStore.subscribe((state, prevState) => {
+      // (1) Dev-bypass seeders.
       if (state.isDevBypass && !prevState.isDevBypass) {
         void seedAllIfDevBypass();
+      }
+
+      // (2) Sync engine start/stop. Compare BOTH dimensions because
+      //     flipping from dev-bypass → real login should also start
+      //     the engine (rare but possible during testing).
+      const wasActive = prevState.isAuthenticated && !prevState.isDevBypass;
+      const isActive = state.isAuthenticated && !state.isDevBypass;
+      if (isActive && !wasActive) {
+        void initSyncEngine().catch(() => {
+          // Engine failures are non-fatal — the badge will report
+          // 'offline' until the user retries. We deliberately don't
+          // surface this here; useSyncStore.lastError carries detail.
+        });
+      } else if (!isActive && wasActive) {
+        void shutdownSync().catch(() => {
+          // Same rationale: silent. shutdown is best-effort.
+        });
       }
     });
 
@@ -83,10 +120,29 @@ function App(): React.JSX.Element | null {
     // path where the bypass session was already active from a previous run).
     void seedAllIfDevBypass();
 
+    // Cold-restart hot-path: if loadFromStorage has already restored a
+    // real session by the time this effect runs (subscribe fires only on
+    // CHANGES, not initial state), bring up the engine here. This is a
+    // no-op if the session is bypass or unauthenticated.
+    {
+      const s = useAuthStore.getState();
+      if (s.isAuthenticated && !s.isDevBypass) {
+        void initSyncEngine().catch(() => {
+          /* silent — see above */
+        });
+      }
+    }
+
     return () => {
       cancelled = true;
       unsubscribeAuth();
       useSyncStore.getState().cleanup();
+      // Best-effort engine teardown on unmount. shutdownSync() is
+      // idempotent and returns immediately if the engine was never
+      // initialized.
+      void shutdownSync().catch(() => {
+        /* silent */
+      });
     };
   }, []);
 

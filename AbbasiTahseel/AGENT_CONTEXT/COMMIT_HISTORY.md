@@ -2,7 +2,39 @@
 
 > Most-recent first. Run `git log --oneline -20` for the live view.
 
-## feat/wave-6-beta-data-layer branch — Wave 6-Β Data Layer (PR #29 — OPEN)
+## feat/wave-7-p1-sync-activation branch — Wave 7 P1 Sync Activation (PR — OPEN)
+
+| SHA       | Date       | Message                                                                          | Files | +/-     |
+|-----------|------------|----------------------------------------------------------------------------------|-------|---------|
+| `13c22af` | 2026-05-22 | `feat(wave-7-p1): start/stop sync engine on auth-state transitions`              | 1     | +60/−4  |
+| `123aaf5` | 2026-05-22 | `feat(wave-7-p1): trigger syncNow('after_login') after real login success`        | 1     | +35/−0  |
+| `8471d14` | 2026-05-22 | `feat(wave-7-p1): add 'after_login' to SyncTriggerReason union`                    | 1     | +1/−0   |
+
+- **`13c22af`** Subscribes `App.tsx` to `useAuthStore` and brings the
+  full sync engine online on the rising edge of
+  `(isAuthenticated && !isDevBypass)` via `initSyncEngine()` from
+  `services/sync/syncBootstrap.ts`. Tears it down on the falling edge
+  via `shutdownSync()`. Cold-restart hot-path included: if the effect
+  runs AFTER `loadFromStorage` already restored a real session, the
+  engine is brought up synchronously inside the effect. Both calls are
+  wrapped in `.catch(() => {})` so emulator / headless environments
+  (BackgroundFetch unavailable) don't crash the app — the
+  `SyncStatusBadge` simply stays 'offline'.
+
+- **`123aaf5`** Adds a private `fireAfterLoginSync()` helper in
+  `authStore.ts` and calls it at both STAGE 1 (`/Authenticate`) and
+  STAGE 2 (`/Login`) success branches. The helper is strictly
+  fire-and-forget: `login()` still returns `true` the moment tokens
+  are persisted. Errors from the coordinator are caught + logged at
+  WARN; the coordinator's own preconditions (online + auth token)
+  make this safe to call even during a network blip.
+
+- **`8471d14`** One-line additive change to
+  `src/services/sync/types.ts`: extends the `SyncTriggerReason` union
+  with `'after_login'`. No runtime behaviour change in this commit —
+  it just unlocks the type for the call sites that land in `123aaf5`.
+
+## feat/wave-6-beta-data-layer branch — Wave 6-Β Data Layer (PR #29 — MERGED a9a5da5)
 
 | SHA       | Date       | Message                                                                                                  | Files | +/-           |
 |-----------|------------|----------------------------------------------------------------------------------------------------------|-------|----------------|
